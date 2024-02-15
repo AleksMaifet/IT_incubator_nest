@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common'
 import {
   IsNotEmpty,
   IsString,
@@ -8,14 +7,15 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import { Transform } from 'class-transformer'
+import { Injectable } from '@nestjs/common'
 import {
   MAX_LOGIN_LENGTH,
   MAX_PASSWORD_LENGTH,
   MIN_LOGIN_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from '../constants'
-import { UsersRepository } from '../users.repository'
+import { Transform } from 'class-transformer'
+import { UsersRepository } from '../../users'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -49,7 +49,7 @@ class CustomUserValidationByLogin implements ValidatorConstraintInterface {
   }
 }
 
-class CreateUserDto {
+class AuthRegNewUserDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @Length(MIN_LOGIN_LENGTH, MAX_LOGIN_LENGTH)
@@ -74,7 +74,7 @@ class CreateUserDto {
 }
 
 export {
-  CreateUserDto,
+  AuthRegNewUserDto,
   CustomUserValidationByLogin,
   CustomUserValidationByEmail,
 }

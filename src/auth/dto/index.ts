@@ -1,0 +1,6 @@
+export * from './baseAuth.dto'
+export * from './authRegConfirmCode.dto'
+export * from './authRegEmail.dto'
+export * from './authUpdatePass.dto'
+export * from './authPassRecovery.dto'
+export * from './authRegNewUser.dto'

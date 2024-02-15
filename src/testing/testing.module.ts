@@ -6,6 +6,7 @@ import { UserModel, UserSchema } from '../users'
 import { BlogModel, BlogSchema } from '../blogs'
 import { PostModel, PostSchema } from '../posts'
 import { CommentModel, CommentSchema } from '../comments'
+import { ConfirmationModel, ConfirmationSchema } from '../auth'
 
 @Module({
   imports: [
@@ -25,6 +26,10 @@ import { CommentModel, CommentSchema } from '../comments'
       {
         name: CommentModel.name,
         schema: CommentSchema,
+      },
+      {
+        name: ConfirmationModel.name,
+        schema: ConfirmationSchema,
       },
     ]),
   ],

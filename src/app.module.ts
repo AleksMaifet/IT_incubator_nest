@@ -1,12 +1,11 @@
-import { APP_PIPE } from '@nestjs/core'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { UsersModule } from './users'
 import { TestingModule } from './testing'
 import { DatabaseModule } from './configs'
-import { ValidationPipe } from './libs/pipes'
+
 import { MongooseModule } from '@nestjs/mongoose'
 import {
+  CustomPostValidationByBlogId,
   PostModel,
   PostSchema,
   PostsController,
@@ -20,8 +19,9 @@ import {
   BlogsRepository,
   BlogsService,
 } from './blogs'
-import { IsBlogExist } from './libs/customValidations'
 import { CommentsModule } from './comments'
+import { AuthModule } from './auth/auth.module'
+import { UsersModule } from './users'
 
 @Module({
   imports: [
@@ -37,25 +37,18 @@ import { CommentsModule } from './comments'
         schema: PostSchema,
       },
     ]),
+    AuthModule,
     UsersModule,
     TestingModule,
     CommentsModule,
   ],
   controllers: [BlogsController, PostsController],
   providers: [
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
     BlogsService,
     BlogsRepository,
     PostsService,
     PostsRepository,
-    {
-      provide: 'BlogsRepository',
-      useClass: BlogsRepository,
-    },
-    IsBlogExist,
+    CustomPostValidationByBlogId,
   ],
 })
 export class AppModule {}

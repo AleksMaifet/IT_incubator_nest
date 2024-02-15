@@ -1,7 +1,7 @@
 import { CreateUserDto } from '../src/users'
-import { BaseBlogDto } from '../src/blogs'
 import { CreatePostDto } from '../src/posts'
 import { BaseCommentDto } from '../src/comments'
+import { BaseBlogDto } from '../src/blogs'
 
 interface IDefaultTestData {
   USER_DATA: CreateUserDto
@@ -32,4 +32,6 @@ const DEFAULT_TEST_DATA: IDefaultTestData = {
   },
 }
 
-export { DEFAULT_TEST_DATA }
+const REFRESH_TOKEN_NAME = 'refreshToken'
+
+export { DEFAULT_TEST_DATA, REFRESH_TOKEN_NAME }
