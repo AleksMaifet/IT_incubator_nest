@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import * as request from 'supertest'
-import * as nodemailer from 'nodemailer'
+import request from 'supertest'
+import nodemailer from 'nodemailer'
 import { NodemailerMock } from 'nodemailer-mock'
 import { load } from 'cheerio'
 import { REFRESH_TOKEN_NAME } from './data'

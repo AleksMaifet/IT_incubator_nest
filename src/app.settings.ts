@@ -15,7 +15,6 @@ export const appSettings = (app: INestApplication) => {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
       exceptionFactory: (errors) => {
         const errorResponse: IErrorResponse = {
           errorsMessages: [],
@@ -32,5 +31,4 @@ export const appSettings = (app: INestApplication) => {
       },
     }),
   )
-  app.enableCors()
 }
