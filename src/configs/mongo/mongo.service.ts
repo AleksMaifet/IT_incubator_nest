@@ -11,9 +11,9 @@ class MongoService {
   private _getNameDB(env: string) {
     switch (true) {
       case env === 'test':
-        return this.configService.get('MONGO_DB_NAME_TEST').toString()
+        return this.configService.get('MONGO_DB_NAME_TEST')
       default:
-        return this.configService.get('MONGO_DB_NAME').toString()
+        return this.configService.get('MONGO_DB_NAME')
     }
   }
 

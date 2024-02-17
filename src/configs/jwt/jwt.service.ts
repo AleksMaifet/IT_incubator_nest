@@ -11,7 +11,7 @@ class JwtService {
     private readonly configService: ConfigService,
     private readonly loggerService: Logger,
   ) {
-    this._secretOrPrivateKey = this.configService.get('JWT_SECRET').toString()
+    this._secretOrPrivateKey = this.configService.get('JWT_SECRET')
   }
 
   public generateAccessToken(userId: string) {

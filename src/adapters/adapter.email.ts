@@ -9,9 +9,9 @@ class AdapterEmail {
   private readonly _email_user: string
 
   constructor(private readonly configService: ConfigService) {
-    const service = this.configService.get('EMAIL_SERVICE').toString()
-    this._email_user = this.configService.get('EMAIL_USER').toString()
-    const pass = this.configService.get('EMAIL_PASSWORD').toString()
+    const service = this.configService.get('EMAIL_SERVICE')
+    this._email_user = this.configService.get('EMAIL_USER')
+    const pass = this.configService.get('EMAIL_PASSWORD')
 
     this._email = createTransport({
       service,
