@@ -3,7 +3,7 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common'
-import * as cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser'
 import { useContainer } from 'class-validator'
 import { AppModule } from './app.module'
 import { IErrorResponse } from './libs/interfaces'
@@ -15,6 +15,7 @@ export const appSettings = (app: INestApplication) => {
 
   app.useGlobalPipes(
     new ValidationPipe({
+      whitelist: true,
       exceptionFactory: (errors) => {
         const errorResponse: IErrorResponse = {
           errorsMessages: [],
