@@ -32,4 +32,5 @@ export const appSettings = (app: INestApplication) => {
       },
     }),
   )
+  app.enableCors()
 }
