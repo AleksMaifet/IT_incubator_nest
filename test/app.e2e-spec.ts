@@ -1,5 +1,5 @@
 import { disconnect } from 'mongoose'
-// import supertest from 'supertest'
+import * as request from 'supertest'
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { sign } from 'jsonwebtoken'
