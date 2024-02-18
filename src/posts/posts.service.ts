@@ -1,20 +1,14 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { PostsRepository } from './posts.repository'
 import { GetPostsRequestQuery } from './interfaces'
 import { DEFAULTS } from './constants'
-import { CreatePostDto, UpdatePostDto } from './dto'
-import { Post } from './post.entity'
-import { BlogsService } from '../blogs'
+import { UpdatePostDto } from './dto'
 
 const { SORT_DIRECTION, PAGE_NUMBER, PAGE_SIZE, SORT_BY } = DEFAULTS
 
 @Injectable()
 export class PostsService {
-  constructor(
-    private readonly postsRepository: PostsRepository,
-    @Inject(forwardRef(() => BlogsService))
-    private readonly blogsService: BlogsService,
-  ) {}
+  constructor(private readonly postsRepository: PostsRepository) {}
 
   private _mapQueryParamsToDB(query: GetPostsRequestQuery<string>) {
     const { sortBy, sortDirection, pageNumber, pageSize } = query
@@ -56,25 +50,6 @@ export class PostsService {
 
   public async updateById({ id, dto }: { id: string; dto: UpdatePostDto }) {
     return await this.postsRepository.updateById(id, dto)
-  }
-
-  public async create({
-    title,
-    shortDescription,
-    content,
-    blogId,
-  }: CreatePostDto) {
-    const blog = await this.blogsService.getById(blogId)
-
-    const newPost = new Post(
-      title,
-      shortDescription,
-      content,
-      blogId,
-      blog.name,
-    )
-
-    return await this.postsRepository.create(newPost)
   }
 
   public async deleteById(id: string) {

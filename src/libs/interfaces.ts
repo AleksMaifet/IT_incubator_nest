@@ -7,4 +7,11 @@ interface IErrorResponse {
   errorsMessages: IErrorMessage[]
 }
 
-export { IErrorResponse }
+interface IJwtUser {
+  userId: string
+  login?: string
+  email?: string
+  deviceId?: string
+}
+
+export { IErrorResponse, IJwtUser }

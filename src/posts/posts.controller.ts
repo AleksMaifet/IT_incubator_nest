@@ -10,17 +10,28 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
+import { CommandBus } from '@nestjs/cqrs'
 import { PostsService } from './posts.service'
 import { GetPostsRequestQuery } from './interfaces'
 import { CreatePostDto, UpdatePostDto } from './dto'
-import { CommentsService, GetCommentsRequestQuery } from '../comments'
+import {
+  BaseCommentDto,
+  CommentsService,
+  GetCommentsRequestQuery,
+} from '../comments'
+import { CreatePostCommand } from './useCases'
+import { User } from '../libs/decorators'
+import { BasicAuthGuard, JwtAuthGuard } from '../libs/guards'
+import { IJwtUser } from '../libs/interfaces'
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
+    private commandBus: CommandBus,
   ) {}
 
   @Get()
@@ -39,11 +50,13 @@ export class PostsController {
     return result
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   private async create(@Body() body: CreatePostDto) {
-    return await this.postsService.create(body)
+    return await this.commandBus.execute(new CreatePostCommand(body))
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updateById(
@@ -59,6 +72,7 @@ export class PostsController {
     return result
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async deleteById(@Param('id') id: string) {
@@ -86,5 +100,32 @@ export class PostsController {
     }
 
     return result
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/comments')
+  private async createCommentById(
+    @Param('id') id: string,
+    @User() user: IJwtUser,
+    @Body() body: BaseCommentDto,
+  ) {
+    const { userId, login } = user
+
+    const result = await this.postsService.getById(id)
+
+    if (!result) {
+      throw new NotFoundException({ message: 'post is not exists' })
+    }
+
+    const { content } = body
+
+    return await this.commentsService.create({
+      postId: id,
+      content,
+      commentatorInfo: {
+        userId,
+        userLogin: login,
+      },
+    })
   }
 }

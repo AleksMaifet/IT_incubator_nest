@@ -51,8 +51,16 @@ export class CommentsService {
     })
   }
 
-  public async getById(id: string) {
-    return await this.commentsRepository.getById(id)
+  public async getById({ id, userId }: { id: string; userId: string }) {
+    const comment = await this.commentsRepository.getById(id)
+
+    if (!comment) return null
+
+    if (!userId) {
+      return comment
+    }
+
+    return comment
   }
 
   public async updateById(dto: Pick<IComments, 'id' | 'content'>) {

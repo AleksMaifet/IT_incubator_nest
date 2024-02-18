@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { MongooseModule } from '@nestjs/mongoose'
+import { CqrsModule } from '@nestjs/cqrs'
 import { TestingModule } from './testing'
 import { DatabaseModule } from './configs'
-
-import { MongooseModule } from '@nestjs/mongoose'
 import {
   CustomPostValidationByBlogId,
   PostModel,
@@ -22,11 +22,24 @@ import {
 import { CommentsModule } from './comments'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users'
+import { AccessTokenStrategy, BasicStrategy } from './libs/strategies'
+import {
+  CreatePostByBlogIdUseCase,
+  GetPostsByBlogIdUseCase,
+} from './blogs/useCases'
+import { CreatePostUseCase } from './posts/useCases'
+
+const useCases = [
+  GetPostsByBlogIdUseCase,
+  CreatePostByBlogIdUseCase,
+  CreatePostUseCase,
+]
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
+    CqrsModule,
     MongooseModule.forFeature([
       {
         name: BlogModel.name,
@@ -44,11 +57,14 @@ import { UsersModule } from './users'
   ],
   controllers: [BlogsController, PostsController],
   providers: [
+    AccessTokenStrategy,
+    BasicStrategy,
     BlogsService,
     BlogsRepository,
     PostsService,
     PostsRepository,
     CustomPostValidationByBlogId,
+    ...useCases,
   ],
 })
 export class AppModule {}

@@ -4,17 +4,13 @@ import { GetBlogsRequestQuery } from './interfaces'
 import { BlogsRepository } from './blogs.repository'
 import { Blog } from './blog.entity'
 import { CreateBlogDto, UpdateBlogDto } from './dto'
-import { BasePostDto, PostsService } from '../posts'
 
 const { SEARCH_NAME_TERM, SORT_DIRECTION, PAGE_NUMBER, PAGE_SIZE, SORT_BY } =
   DEFAULTS
 
 @Injectable()
 export class BlogsService {
-  constructor(
-    private readonly blogsRepository: BlogsRepository,
-    private readonly postsService: PostsService,
-  ) {}
+  constructor(private readonly blogsRepository: BlogsRepository) {}
 
   public async getAll(query: GetBlogsRequestQuery<string>) {
     const dto = this._mapQueryParamsToDB(query)
@@ -24,26 +20,6 @@ export class BlogsService {
 
   public async getById(id: string) {
     return await this.blogsRepository.getById(id)
-  }
-
-  public async getPostsByBlogId({
-    id,
-    query,
-  }: {
-    id: string
-    query: Omit<GetBlogsRequestQuery<string>, 'searchNameTerm'>
-  }) {
-    return await this.postsService.getPostsByBlogId({ id, query })
-  }
-
-  public async createPostsByBlogId({
-    id,
-    body,
-  }: {
-    id: string
-    body: BasePostDto
-  }) {
-    return await this.postsService.create({ ...body, blogId: id })
   }
 
   public async updateById(id: string, dto: UpdateBlogDto) {

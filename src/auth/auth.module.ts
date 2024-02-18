@@ -14,7 +14,7 @@ import {
   CustomUserValidationByEmail,
   CustomUserValidationByLogin,
 } from './dto'
-import { AccessTokenStrategy, RefreshTokenStrategy } from '../libs/strategies'
+import { RefreshTokenStrategy } from '../libs/strategies'
 import { ThrottlerModule } from '@nestjs/throttler'
 
 @Module({
@@ -45,7 +45,6 @@ import { ThrottlerModule } from '@nestjs/throttler'
     AdapterEmail,
     Logger,
     JwtService,
-    AccessTokenStrategy,
     RefreshTokenStrategy,
     CustomUserValidationByLogin,
     CustomUserValidationByEmail,

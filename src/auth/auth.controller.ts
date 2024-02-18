@@ -29,7 +29,8 @@ import {
   JwtRefreshGuard,
   ThrottlerBehindProxyGuard,
 } from '../libs/guards'
-import { User } from '../decorators'
+import { User } from '../libs/decorators'
+import { IJwtUser } from '../libs/interfaces'
 
 @Controller('auth')
 export class AuthController {
@@ -94,26 +95,26 @@ export class AuthController {
     await this.authService.updateUserPassword(body)
   }
 
-  @Get('/me')
   @UseGuards(JwtAuthGuard)
-  private async getMe(@User() user: any) {
+  @Get('/me')
+  private async getMe(@User() user: IJwtUser) {
     return user
   }
 
-  @Post('/refresh-token')
   @UseGuards(JwtRefreshGuard)
+  @Post('/refresh-token')
   @HttpCode(HttpStatus.OK)
   private async getNewPairAuthTokens(
-    @User() user: any,
+    @User() user: IJwtUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { id, deviceId } = user
+    const { userId, deviceId } = user
 
-    const accessJwtToken = this.jwtService.generateAccessToken(id)
-    const refreshJwtToken = this.jwtService.updateRefreshToken(id, deviceId)
+    const accessJwtToken = this.jwtService.generateAccessToken(userId)
+    const refreshJwtToken = this.jwtService.updateRefreshToken(userId, deviceId)
     const payload = this.jwtService.getJwtDataByToken(refreshJwtToken)
 
-    const { userId, iat, exp } = payload
+    // const { userId, iat, exp } = payload
     // await this.securityDevicesService.updateRefreshTokenMeta({
     //   userId,
     //   deviceId,
@@ -132,7 +133,7 @@ export class AuthController {
 
   @Post('/logout')
   private async logout(
-    @User() user: any,
+    @User() user: IJwtUser,
     @Res({ passthrough: true }) res: Response,
   ) {
     // await this.securityDevicesService.deleteRefreshTokenMeta({

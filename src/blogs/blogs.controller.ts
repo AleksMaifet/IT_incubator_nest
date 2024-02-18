@@ -10,15 +10,22 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common'
+import { CommandBus } from '@nestjs/cqrs'
 import { BlogsService } from './blogs.service'
 import { CreateBlogDto, UpdateBlogDto } from './dto'
 import { GetBlogsRequestQuery } from './interfaces'
 import { BasePostDto } from '../posts'
+import { CreatePostByBlogIdCommand, GetPostsByBlogIdCommand } from './useCases'
+import { BasicAuthGuard } from '../libs/guards'
 
 @Controller('blogs')
 export class BlogsController {
-  constructor(private readonly blogsService: BlogsService) {}
+  constructor(
+    private readonly blogsService: BlogsService,
+    private commandBus: CommandBus,
+  ) {}
 
   @Get()
   private async getAll(@Query() query: GetBlogsRequestQuery<string>) {
@@ -47,12 +54,15 @@ export class BlogsController {
       throw new NotFoundException({ message: 'blog is not exists' })
     }
 
-    return await this.blogsService.getPostsByBlogId({
-      id,
-      query,
-    })
+    return await this.commandBus.execute(
+      new GetPostsByBlogIdCommand({
+        id,
+        query,
+      }),
+    )
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post(':id/posts')
   private async createPostByBlogId(
     @Param('id') id: string,
@@ -64,14 +74,18 @@ export class BlogsController {
       throw new NotFoundException({ message: 'blog is not exists' })
     }
 
-    return await this.blogsService.createPostsByBlogId({ id, body })
+    return await this.commandBus.execute(
+      new CreatePostByBlogIdCommand({ id, body }),
+    )
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   private async create(@Body() body: CreateBlogDto) {
     return await this.blogsService.create(body)
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updateById(
@@ -87,6 +101,7 @@ export class BlogsController {
     return result
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async deleteById(@Param('id') id: string) {
