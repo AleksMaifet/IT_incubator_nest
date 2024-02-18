@@ -8,7 +8,6 @@ import {
   HttpStatus,
   Ip,
   Post,
-  Request,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -19,6 +18,7 @@ import {
   AuthPassRecoveryDto,
   AuthRegConfirmCodeDto,
   AuthRegEmailDto,
+  AuthRegNewUserDto,
   AuthUpdatePassDto,
   BaseAuthDto,
 } from './dto'
@@ -29,7 +29,7 @@ import {
   JwtRefreshGuard,
   ThrottlerBehindProxyGuard,
 } from '../libs/guards'
-import { AuthRegNewUserDto } from './dto'
+import { User } from '../decorators'
 
 @Controller('auth')
 export class AuthController {
@@ -96,20 +96,18 @@ export class AuthController {
 
   @Get('/me')
   @UseGuards(JwtAuthGuard)
-  private async getMe(@Request() req: any) {
-    return req.user
+  private async getMe(@User() user: any) {
+    return user
   }
 
   @Post('/refresh-token')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   private async getNewPairAuthTokens(
-    @Request() req: any,
+    @User() user: any,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const {
-      user: { id, deviceId },
-    } = req
+    const { id, deviceId } = user
 
     const accessJwtToken = this.jwtService.generateAccessToken(id)
     const refreshJwtToken = this.jwtService.updateRefreshToken(id, deviceId)
@@ -134,16 +132,9 @@ export class AuthController {
 
   @Post('/logout')
   private async logout(
-    @Request() req: any,
+    @User() user: any,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const {
-      context: {
-        user: { id },
-        token: { deviceId },
-      },
-    } = req
-
     // await this.securityDevicesService.deleteRefreshTokenMeta({
     //   userId: id,
     //   deviceId,

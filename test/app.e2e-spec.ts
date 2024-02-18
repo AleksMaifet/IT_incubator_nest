@@ -1,8 +1,9 @@
-import { disconnect } from 'mongoose'
 import request from 'supertest'
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
+import { MongooseModule } from '@nestjs/mongoose'
 import { sign } from 'jsonwebtoken'
+import { MongoMemoryServer } from 'mongodb-memory-server'
 import { DEFAULT_TEST_DATA } from './data'
 import { AppModule } from '../src/app.module'
 import { appSettings } from '../src/app.settings'
@@ -14,9 +15,11 @@ import {
   mock,
   parsedHtmlAndGetCode,
 } from './helpers'
+import { DatabaseModule } from '../src/configs'
 
 describe('Application', () => {
   let application: INestApplication
+  let mongo: MongoMemoryServer
   let httpServer: () => void
 
   const { USER_DATA, BLOG_DATA, POST_DATA } = DEFAULT_TEST_DATA
@@ -24,7 +27,21 @@ describe('Application', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile()
+    })
+      .overrideModule(DatabaseModule)
+      .useModule(
+        MongooseModule.forRootAsync({
+          useFactory: async () => {
+            mongo = await MongoMemoryServer.create()
+            const mongoUri = mongo.getUri()
+
+            return {
+              uri: mongoUri,
+            }
+          },
+        }),
+      )
+      .compile()
 
     application = moduleFixture.createNestApplication()
 
@@ -38,7 +55,7 @@ describe('Application', () => {
   afterAll(async () => {
     await request(httpServer).delete('/testing/all-data').expect(204)
 
-    await disconnect()
+    await mongo.stop()
     await application.close()
   })
 
