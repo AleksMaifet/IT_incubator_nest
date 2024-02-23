@@ -11,20 +11,22 @@ import {
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { PostsService } from './posts.service'
-import { GetPostsRequestQuery } from './interfaces'
-import { CreatePostDto, UpdatePostDto } from './dto'
 import {
   BaseCommentDto,
   CommentsService,
   GetCommentsRequestQuery,
 } from '../comments'
+import { PostsService } from './posts.service'
+import { GetPostsRequestQuery } from './interfaces'
+import { BasePostLikeDto, CreatePostDto, UpdatePostDto } from './dto'
 import { CreatePostCommand } from './useCases'
 import { User } from '../libs/decorators'
-import { BasicAuthGuard, JwtAuthGuard } from '../libs/guards'
+import { HttpRequestHeaderUserInterceptor } from '../libs/interceptors'
 import { IJwtUser } from '../libs/interfaces'
+import { BasicAuthGuard, JwtAuthGuard } from '../libs/guards'
 
 @Controller('posts')
 export class PostsController {
@@ -34,14 +36,25 @@ export class PostsController {
     private commandBus: CommandBus,
   ) {}
 
+  @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get()
-  private async getAll(@Query() query: GetPostsRequestQuery<string>) {
-    return await this.postsService.getAll(query)
+  private async getAll(
+    @Query() query: GetPostsRequestQuery<string>,
+    @User() user: IJwtUser,
+  ) {
+    return await this.postsService.getAll({
+      userId: user?.userId,
+      query,
+    })
   }
 
+  @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id')
-  private async getById(@Param('id') id: string) {
-    const result = await this.postsService.getById(id)
+  private async getById(@Param('id') id: string, @User() user: IJwtUser) {
+    const result = await this.postsService.getById({
+      id,
+      userId: user?.userId,
+    })
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
@@ -85,13 +98,16 @@ export class PostsController {
     return result
   }
 
+  @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id/comments')
   private async getAllCommentById(
     @Param('id') id: string,
+    @User() user: IJwtUser,
     @Query() query: GetCommentsRequestQuery<string>,
   ) {
     const result = await this.commentsService.getAllByPostId({
       postId: id,
+      userId: user?.userId,
       query,
     })
 
@@ -111,7 +127,10 @@ export class PostsController {
   ) {
     const { userId, login } = user
 
-    const result = await this.postsService.getById(id)
+    const result = await this.postsService.getById({
+      id,
+      userId,
+    })
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
@@ -126,6 +145,36 @@ export class PostsController {
         userId,
         userLogin: login,
       },
+    })
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/like-status')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  private async updateLikeById(
+    @Param('id') id: string,
+    @User() user: IJwtUser,
+    @Body() body: BasePostLikeDto,
+  ) {
+    const { likeStatus } = body
+    const { userId, login } = user
+
+    const result = await this.postsService.getById({
+      id,
+      userId,
+    })
+
+    if (!result) {
+      throw new NotFoundException({ message: 'post is not exists' })
+    }
+
+    await this.postsService.updateLikeById({
+      postId: id,
+      user: {
+        id: userId,
+        login,
+      },
+      likeStatus,
     })
   }
 }

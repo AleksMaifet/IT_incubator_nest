@@ -1,7 +1,7 @@
-import { IPost, IUserPostLike, LIKE_POST_USER_STATUS_ENUM } from './interfaces'
-import { DEFAULTS_LIKE_STATUS } from './constants'
+import { IPost, IUserPostLike, LIKE_POST_USER_STATUS_ENUM } from '../interfaces'
+import { DEFAULTS_POST_LIKE_STATUS } from '../constants'
 
-const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_LIKE_STATUS
+const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_POST_LIKE_STATUS
 
 class Post implements IPost {
   public readonly id: string

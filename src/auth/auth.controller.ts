@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { Response } from 'express'
+import { JwtService } from '../configs'
 import { AuthService } from './auth.service'
 import {
   AuthPassRecoveryDto,
@@ -22,14 +23,13 @@ import {
   AuthUpdatePassDto,
   BaseAuthDto,
 } from './dto'
-import { JwtService } from '../configs'
 import { REFRESH_TOKEN_COOKIE_NAME } from './constants'
+import { User } from '../libs/decorators'
 import {
   JwtAuthGuard,
   JwtRefreshGuard,
   ThrottlerBehindProxyGuard,
 } from '../libs/guards'
-import { User } from '../libs/decorators'
 import { IJwtUser } from '../libs/interfaces'
 
 @Controller('auth')
@@ -39,7 +39,7 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   private async login(
@@ -79,7 +79,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async passwordRecovery(@Body() body: AuthPassRecoveryDto) {
@@ -88,7 +88,7 @@ export class AuthController {
     await this.authService.passwordRecovery(email)
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updatePassword(@Body() body: AuthUpdatePassDto) {
@@ -144,7 +144,7 @@ export class AuthController {
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registration(@Body() body: AuthRegNewUserDto) {
@@ -155,7 +155,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registrationConfirmation(@Body() body: AuthRegConfirmCodeDto) {
@@ -164,7 +164,7 @@ export class AuthController {
     await this.authService.confirmEmail(code)
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registrationEmailResending(@Body() body: AuthRegEmailDto) {

@@ -1,7 +1,7 @@
 import { IComments, LIKE_COMMENT_USER_STATUS_ENUM } from './interfaces'
-import { DEFAULTS_LIKE_STATUS } from './constants'
+import { DEFAULTS_COMMENT_LIKE_STATUS } from './constants'
 
-const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_LIKE_STATUS
+const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_COMMENT_LIKE_STATUS
 
 class Comment implements IComments {
   public readonly id: string

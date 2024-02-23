@@ -11,6 +11,7 @@ import {
   Put,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { BlogsService } from './blogs.service'
@@ -18,6 +19,9 @@ import { CreateBlogDto, UpdateBlogDto } from './dto'
 import { GetBlogsRequestQuery } from './interfaces'
 import { BasePostDto } from '../posts'
 import { CreatePostByBlogIdCommand, GetPostsByBlogIdCommand } from './useCases'
+import { User } from '../libs/decorators'
+import { HttpRequestHeaderUserInterceptor } from '../libs/interceptors'
+import { IJwtUser } from '../libs/interfaces'
 import { BasicAuthGuard } from '../libs/guards'
 
 @Controller('blogs')
@@ -43,10 +47,12 @@ export class BlogsController {
     return result
   }
 
+  @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id/posts')
   private async getPostsByBlogId(
     @Param('id') id: string,
     @Query() query: Omit<GetBlogsRequestQuery<string>, 'searchNameTerm'>,
+    @User() user: IJwtUser,
   ) {
     const result = await this.blogsService.getById(id)
 
@@ -57,6 +63,7 @@ export class BlogsController {
     return await this.commandBus.execute(
       new GetPostsByBlogIdCommand({
         id,
+        userId: user?.userId,
         query,
       }),
     )

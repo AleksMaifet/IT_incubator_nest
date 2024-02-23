@@ -6,6 +6,7 @@ class GetPostsByBlogIdCommand {
   constructor(
     public payload: {
       id: string
+      userId: string
       query: Omit<GetBlogsRequestQuery<string>, 'searchNameTerm'>
     },
   ) {}

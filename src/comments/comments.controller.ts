@@ -10,17 +10,20 @@ import {
   Param,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import { CommentsService } from './comments.service'
-import { BaseCommentDto } from './dto'
+import { BaseCommentDto, BaseCommentLikeDto } from './dto'
 import { JwtAuthGuard } from '../libs/guards'
 import { User } from '../libs/decorators'
 import { IJwtUser } from '../libs/interfaces'
+import { HttpRequestHeaderUserInterceptor } from '../libs/interceptors'
 
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
+  @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id')
   private async getById(@Param('id') id: string, @User() user: IJwtUser) {
     const result = await this.commentsService.getById({
@@ -76,5 +79,32 @@ export class CommentsController {
     }
 
     return await this.commentsService.deleteById(id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/like-status')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  private async updateLikeById(
+    @Param('id') id: string,
+    @User() user: IJwtUser,
+    @Body() body: BaseCommentLikeDto,
+  ) {
+    const { userId, login } = user
+    const { likeStatus } = body
+
+    const comment = await this.commentsService.getById({ id, userId })
+
+    if (!comment) {
+      throw new NotFoundException({ message: 'comment is not exists' })
+    }
+
+    return await this.commentsService.updateLikeById({
+      commentId: id,
+      user: {
+        id: userId,
+        login,
+      },
+      likeStatus,
+    })
   }
 }

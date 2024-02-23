@@ -6,7 +6,12 @@ import {
   GetCommentsRequestQuery,
   IComments,
   ICommentsResponse,
+  LIKE_COMMENT_USER_STATUS_ENUM,
 } from './interfaces'
+import { BaseCommentLikeDto } from './dto'
+import { DEFAULTS_COMMENT_LIKE_STATUS } from './constants'
+
+const { LIKES_COUNT, DISLIKES_COUNT } = DEFAULTS_COMMENT_LIKE_STATUS
 
 @Injectable()
 class CommentsRepository {
@@ -100,6 +105,52 @@ class CommentsRepository {
 
   public async deleteById(id: string) {
     return await this.commentModel.findOneAndDelete({ id }).exec()
+  }
+
+  public async updateLikeWithStatusLikeOrDislike(
+    dto: {
+      commentId: string
+      isFirstTime: boolean
+    } & BaseCommentLikeDto,
+  ) {
+    const { commentId, likeStatus, isFirstTime } = dto
+
+    const comment = await this.commentModel.findOne({ id: commentId })
+    const currentComment = comment!
+    const { likesInfo } = currentComment
+
+    switch (likeStatus as string) {
+      case LIKE_COMMENT_USER_STATUS_ENUM.None:
+        likesInfo.likesCount = LIKES_COUNT
+        likesInfo.dislikesCount = DISLIKES_COUNT
+        break
+      case LIKE_COMMENT_USER_STATUS_ENUM.Like:
+        likesInfo.likesCount += 1
+
+        if (isFirstTime) {
+          break
+        }
+
+        likesInfo.dislikesCount -= 1
+
+        break
+      case LIKE_COMMENT_USER_STATUS_ENUM.Dislike:
+        likesInfo.dislikesCount += 1
+
+        if (isFirstTime) {
+          break
+        }
+
+        likesInfo.likesCount -= 1
+
+        break
+      default:
+        break
+    }
+
+    comment.markModified('likesInfo')
+
+    return await currentComment.save()
   }
 }
 

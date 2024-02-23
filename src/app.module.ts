@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common'
+import { Logger, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TestingModule } from './testing'
-import { DatabaseModule } from './configs'
+import { DatabaseModule, JwtService } from './configs'
 import {
   CustomPostValidationByBlogId,
   PostModel,
@@ -28,6 +28,7 @@ import {
   GetPostsByBlogIdUseCase,
 } from './blogs/useCases'
 import { CreatePostUseCase } from './posts/useCases'
+import { LikesModule } from './likes'
 
 const useCases = [
   GetPostsByBlogIdUseCase,
@@ -54,6 +55,7 @@ const useCases = [
     UsersModule,
     TestingModule,
     CommentsModule,
+    LikesModule,
   ],
   controllers: [BlogsController, PostsController],
   providers: [
@@ -64,6 +66,8 @@ const useCases = [
     PostsService,
     PostsRepository,
     CustomPostValidationByBlogId,
+    Logger,
+    JwtService,
     ...useCases,
   ],
 })
