@@ -6,6 +6,7 @@ import { BlogModel } from '../blogs'
 import { PostModel } from '../posts'
 import { CommentModel } from '../comments'
 import { ConfirmationModel } from '../auth'
+import { LikeModel } from '../likes'
 
 @Injectable()
 class TestingRepository {
@@ -20,6 +21,8 @@ class TestingRepository {
     private readonly commentModel: Model<CommentModel>,
     @InjectModel(ConfirmationModel.name)
     private readonly confirmationModel: Model<ConfirmationModel>,
+    @InjectModel(LikeModel.name)
+    private readonly LikeModel: Model<LikeModel>,
   ) {}
 
   public async deleteAll() {
@@ -28,10 +31,8 @@ class TestingRepository {
     await this.userModel.deleteMany()
     await this.commentModel.deleteMany()
     await this.confirmationModel.deleteMany()
+    await this.LikeModel.deleteMany()
     // await this.refreshTokenMetaModel.deleteMany()
-    // await this.emailConfirmationModel.deleteMany()
-    // await this.passwordRecoveryConfirmationModel.deleteMany()
-    // await this.likesModel.deleteMany()
   }
 }
 

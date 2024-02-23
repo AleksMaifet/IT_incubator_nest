@@ -1,9 +1,5 @@
-import { BasePostDto } from './basePost.dto'
-import { IsString } from 'class-validator'
+import { CreatePostDto } from './createPost.dto'
 
-class UpdatePostDto extends BasePostDto {
-  @IsString()
-  readonly blogId: string
-}
+class UpdatePostDto extends CreatePostDto {}
 
 export { UpdatePostDto }
