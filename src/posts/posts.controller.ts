@@ -105,17 +105,20 @@ export class PostsController {
     @User() user: IJwtUser,
     @Query() query: GetCommentsRequestQuery<string>,
   ) {
-    const result = await this.commentsService.getAllByPostId({
-      postId: id,
+    const result = await this.postsService.getById({
+      id,
       userId: user?.userId,
-      query,
     })
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
     }
 
-    return result
+    return await this.commentsService.getAllByPostId({
+      postId: id,
+      userId: user?.userId,
+      query,
+    })
   }
 
   @UseGuards(JwtAuthGuard)
