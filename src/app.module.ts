@@ -29,6 +29,7 @@ import {
 } from './blogs/useCases'
 import { CreatePostUseCase } from './posts/useCases'
 import { LikesModule } from './likes'
+import { SecurityDevicesModule } from './security-devices/security-devices.module'
 
 const useCases = [
   GetPostsByBlogIdUseCase,
@@ -56,6 +57,7 @@ const useCases = [
     TestingModule,
     CommentsModule,
     LikesModule,
+    SecurityDevicesModule,
   ],
   controllers: [BlogsController, PostsController],
   providers: [

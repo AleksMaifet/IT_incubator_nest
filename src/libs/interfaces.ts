@@ -7,11 +7,16 @@ interface IErrorResponse {
   errorsMessages: IErrorMessage[]
 }
 
-interface IJwtUser {
+interface IPartialJwtUser {
+  login: string
+  email: string
+  deviceId: string
+  iat: number
+  exp: number
+}
+
+interface IJwtUser extends Partial<IPartialJwtUser> {
   userId: string
-  login?: string
-  email?: string
-  deviceId?: string
 }
 
 export { IErrorResponse, IJwtUser }

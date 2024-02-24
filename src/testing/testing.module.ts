@@ -8,6 +8,10 @@ import { PostModel, PostSchema } from '../posts'
 import { CommentModel, CommentSchema } from '../comments'
 import { ConfirmationModel, ConfirmationSchema } from '../auth'
 import { LikeModel, LikeSchema } from '../likes'
+import {
+  RefreshTokenMetaModel,
+  RefreshTokenMetaSchema,
+} from '../security-devices'
 
 @Module({
   imports: [
@@ -35,6 +39,10 @@ import { LikeModel, LikeSchema } from '../likes'
       {
         name: LikeModel.name,
         schema: LikeSchema,
+      },
+      {
+        name: RefreshTokenMetaModel.name,
+        schema: RefreshTokenMetaSchema,
       },
     ]),
   ],

@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { Response } from 'express'
+import { parse } from 'useragent'
 import { JwtService } from '../configs'
 import { AuthService } from './auth.service'
 import {
@@ -31,19 +32,34 @@ import {
   ThrottlerBehindProxyGuard,
 } from '../libs/guards'
 import { IJwtUser } from '../libs/interfaces'
+import { SecurityDevicesService } from '../security-devices'
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
+    private readonly securityDevicesService: SecurityDevicesService,
   ) {}
 
-  // @UseGuards(ThrottlerBehindProxyGuard)
+  private async _isCurrentRefreshTokenExist(
+    payload: Pick<IJwtUser, 'userId' | 'deviceId' | 'iat' | 'exp'>,
+  ) {
+    const { userId, deviceId, iat, exp } = payload
+
+    return await this.securityDevicesService.getRefreshTokenMeta({
+      userId,
+      deviceId,
+      issuedAt: iat,
+      expirationAt: exp,
+    })
+  }
+
+  @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   private async login(
-    @Headers() headers: any,
+    @Headers('user-agent') userAgent: string,
     @Ip() ip: string,
     @Body() body: BaseAuthDto,
     @Res({ passthrough: true }) res: Response,
@@ -60,14 +76,14 @@ export class AuthController {
 
     const { deviceId, iat, exp } = payload
 
-    // await this.securityDevicesService.createRefreshTokenMeta({
-    //   userId,
-    //   deviceId,
-    //   issuedAt: iat,
-    //   expirationAt: exp,
-    //   deviceName: parse(headers['user-agent']!).family,
-    //   clientIp: ip!,
-    // })
+    await this.securityDevicesService.createRefreshTokenMeta({
+      userId,
+      deviceId,
+      issuedAt: iat,
+      expirationAt: exp,
+      deviceName: parse(userAgent!).family,
+      clientIp: ip!,
+    })
 
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshJwtToken, {
       httpOnly: true,
@@ -79,7 +95,7 @@ export class AuthController {
     }
   }
 
-  // @UseGuards(ThrottlerBehindProxyGuard)
+  @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async passwordRecovery(@Body() body: AuthPassRecoveryDto) {
@@ -88,7 +104,7 @@ export class AuthController {
     await this.authService.passwordRecovery(email)
   }
 
-  // @UseGuards(ThrottlerBehindProxyGuard)
+  @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updatePassword(@Body() body: AuthUpdatePassDto) {
@@ -110,17 +126,25 @@ export class AuthController {
   ) {
     const { userId, deviceId } = user
 
+    const result = await this._isCurrentRefreshTokenExist(user)
+
+    if (!result) {
+      throw new UnauthorizedException()
+    }
+
     const accessJwtToken = this.jwtService.generateAccessToken(userId)
     const refreshJwtToken = this.jwtService.updateRefreshToken(userId, deviceId)
     const payload = this.jwtService.getJwtDataByToken(refreshJwtToken)
 
-    // const { userId, iat, exp } = payload
-    // await this.securityDevicesService.updateRefreshTokenMeta({
-    //   userId,
-    //   deviceId,
-    //   issuedAt: iat,
-    //   expirationAt: exp,
-    // })
+    const { userId: currentUserId, iat, exp } = payload
+
+    await this.securityDevicesService.updateRefreshTokenMeta({
+      userId: currentUserId,
+      deviceId,
+      issuedAt: iat,
+      expirationAt: exp,
+    })
+
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshJwtToken, {
       httpOnly: true,
       secure: true,
@@ -131,20 +155,30 @@ export class AuthController {
     }
   }
 
+  @UseGuards(JwtRefreshGuard)
   @Post('/logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
   private async logout(
     @User() user: IJwtUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // await this.securityDevicesService.deleteRefreshTokenMeta({
-    //   userId: id,
-    //   deviceId,
-    // })
+    const { userId, deviceId } = user
+
+    const result = await this._isCurrentRefreshTokenExist(user)
+
+    if (!result) {
+      throw new UnauthorizedException()
+    }
+
+    await this.securityDevicesService.deleteRefreshTokenMeta({
+      userId,
+      deviceId,
+    })
 
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }
 
-  // @UseGuards(ThrottlerBehindProxyGuard)
+  @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registration(@Body() body: AuthRegNewUserDto) {
@@ -155,7 +189,7 @@ export class AuthController {
     }
   }
 
-  // @UseGuards(ThrottlerBehindProxyGuard)
+  @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registrationConfirmation(@Body() body: AuthRegConfirmCodeDto) {
@@ -164,7 +198,7 @@ export class AuthController {
     await this.authService.confirmEmail(code)
   }
 
-  // @UseGuards(ThrottlerBehindProxyGuard)
+  @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registrationEmailResending(@Body() body: AuthRegEmailDto) {

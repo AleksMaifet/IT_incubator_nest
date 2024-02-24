@@ -16,10 +16,12 @@ import {
 } from './dto'
 import { RefreshTokenStrategy } from '../libs/strategies'
 import { ThrottlerModule } from '@nestjs/throttler'
+import { SecurityDevicesModule } from '../security-devices/security-devices.module'
 
 @Module({
   imports: [
     UsersModule,
+    SecurityDevicesModule,
     MongooseModule.forFeature([
       {
         name: ConfirmationModel.name,

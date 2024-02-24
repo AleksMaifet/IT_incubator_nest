@@ -18,17 +18,14 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException()
     }
 
-    try {
-      const payload = this.jwtService.getJwtDataByToken(token)
+    const payload = this.jwtService.getJwtDataByToken(token)
 
-      const { userId, deviceId } = payload
-
-      return {
-        userId,
-        deviceId,
-      }
-    } catch {
+    if (!payload) {
       throw new UnauthorizedException()
+    }
+
+    return {
+      ...payload,
     }
   }
 
