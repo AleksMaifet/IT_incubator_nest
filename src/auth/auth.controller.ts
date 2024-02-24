@@ -33,6 +33,7 @@ import {
 } from '../libs/guards'
 import { IJwtUser } from '../libs/interfaces'
 import { SecurityDevicesService } from '../security-devices'
+import { Throttle } from '@nestjs/throttler'
 
 @Controller('auth')
 export class AuthController {
@@ -178,6 +179,7 @@ export class AuthController {
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }
 
+  @Throttle({ default: { limit: 5, ttl: 14000 } })
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -198,6 +200,7 @@ export class AuthController {
     await this.authService.confirmEmail(code)
   }
 
+  @Throttle({ default: { limit: 5, ttl: 13000 } })
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
