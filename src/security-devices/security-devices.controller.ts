@@ -6,12 +6,11 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
-  Param,
   UseGuards,
 } from '@nestjs/common'
 import { SecurityDevicesService } from './security-devices.service'
 import { JwtRefreshGuard } from '../libs/guards'
-import { User } from '../libs/decorators'
+import { User, UUIDParam } from '../libs/decorators'
 import { IJwtUser } from '../libs/interfaces'
 
 @Controller('security/devices')
@@ -44,7 +43,7 @@ export class SecurityDevicesController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async deleteDeviceByDeviceId(
-    @Param('id') id: string,
+    @UUIDParam('id') id: string,
     @User() user: IJwtUser,
   ) {
     const device = await this.securityDevicesService.getDeviceByDeviceId(id)

@@ -3,7 +3,7 @@ import { BasePostDto, Post, PostsRepository } from '../../posts'
 import { BlogsService } from '../blogs.service'
 
 class CreatePostByBlogIdCommand {
-  constructor(public payload: { id: string; body: BasePostDto }) {}
+  constructor(public readonly payload: { id: string; body: BasePostDto }) {}
 }
 
 @CommandHandler(CreatePostByBlogIdCommand)

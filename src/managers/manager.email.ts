@@ -1,6 +1,6 @@
+import { Injectable } from '@nestjs/common'
 import { AdapterEmail } from '../adapters'
 import { CreateUserDto } from '../users'
-import { Injectable } from '@nestjs/common'
 
 @Injectable()
 class ManagerEmail {

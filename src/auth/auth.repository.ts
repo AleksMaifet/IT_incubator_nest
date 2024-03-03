@@ -33,16 +33,12 @@ class AuthRepository {
     return result
   }
 
-  public async deleteEmailConfirmationByUserId(userId: string) {
+  public async deleteConfirmationByUserId(userId: string) {
     return await this.confirmationModel.deleteOne({ userId }).exec()
   }
 
   public async deleteEmailConfirmationByCode(code: string) {
     return await this.confirmationModel.deleteOne({ code }).exec()
-  }
-
-  public async deletePasswordRecoveryConfirmationByUserId(userId: string) {
-    return await this.confirmationModel.deleteOne({ userId }).exec()
   }
 
   public async getEmailConfirmationByCodeOrUserId(codeOrUserId: string) {

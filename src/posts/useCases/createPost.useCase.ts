@@ -4,7 +4,7 @@ import { CreatePostDto, Post, PostsRepository } from '../../posts'
 import { BlogsService } from '../../blogs'
 
 class CreatePostCommand {
-  constructor(public payload: CreatePostDto) {}
+  constructor(public readonly payload: CreatePostDto) {}
 }
 
 @CommandHandler(CreatePostCommand)
@@ -19,15 +19,9 @@ class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   async execute(command: CreatePostCommand) {
     const { title, shortDescription, content, blogId } = command.payload
 
-    const blog = await this.blogsService.getById(blogId)
+    const { id, name } = await this.blogsService.getById(blogId)
 
-    const newPost = new Post(
-      title,
-      shortDescription,
-      content,
-      blog.id,
-      blog.name,
-    )
+    const newPost = new Post(title, shortDescription, content, id, name)
 
     return await this.postsRepository.create(newPost)
   }

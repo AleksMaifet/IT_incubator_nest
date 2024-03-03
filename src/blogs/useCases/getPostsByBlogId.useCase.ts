@@ -4,7 +4,7 @@ import { GetBlogsRequestQuery } from '../interfaces'
 
 class GetPostsByBlogIdCommand {
   constructor(
-    public payload: {
+    public readonly payload: {
       id: string
       userId: string
       query: Omit<GetBlogsRequestQuery<string>, 'searchNameTerm'>

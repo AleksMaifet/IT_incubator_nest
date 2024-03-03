@@ -33,7 +33,7 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
-    private commandBus: CommandBus,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @UseInterceptors(HttpRequestHeaderUserInterceptor)

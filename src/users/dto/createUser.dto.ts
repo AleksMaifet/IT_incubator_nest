@@ -16,14 +16,18 @@ import {
   MIN_PASSWORD_LENGTH,
 } from '../constants'
 import { UsersRepository } from '../users.repository'
+import { UsersSqlRepository } from '../users.sql.repository'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomUserValidationByEmail implements ValidatorConstraintInterface {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
+  ) {}
 
   async validate(loginOrEmail: string) {
-    const user = await this.usersRepository.getByLoginOrEmail(loginOrEmail)
+    const user = await this.usersSqlRepository.getByLoginOrEmail(loginOrEmail)
 
     return !user
   }
@@ -36,10 +40,13 @@ class CustomUserValidationByEmail implements ValidatorConstraintInterface {
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomUserValidationByLogin implements ValidatorConstraintInterface {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
+  ) {}
 
   async validate(loginOrEmail: string) {
-    const user = await this.usersRepository.getByLoginOrEmail(loginOrEmail)
+    const user = await this.usersSqlRepository.getByLoginOrEmail(loginOrEmail)
 
     return !user
   }

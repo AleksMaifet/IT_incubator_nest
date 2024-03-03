@@ -12,6 +12,8 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
+import { CommandBus } from '@nestjs/cqrs'
 import { Response } from 'express'
 import { parse } from 'useragent'
 import { JwtService } from '../configs'
@@ -33,7 +35,14 @@ import {
 } from '../libs/guards'
 import { IJwtUser } from '../libs/interfaces'
 import { SecurityDevicesService } from '../security-devices'
-import { Throttle } from '@nestjs/throttler'
+import {
+  ConfirmEmailCommand,
+  CreateUserCommand,
+  LoginUserCommand,
+  PasswordRecoveryCommand,
+  RegistrationEmailResendingCommand,
+  UpdateUserPasswordCommand,
+} from './useCases'
 
 @Controller('auth')
 export class AuthController {
@@ -41,6 +50,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
     private readonly securityDevicesService: SecurityDevicesService,
+    private readonly commandBus: CommandBus,
   ) {}
 
   private async _isCurrentRefreshTokenExist(
@@ -65,7 +75,7 @@ export class AuthController {
     @Body() body: BaseAuthDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = await this.authService.login(body)
+    const userId = await this.commandBus.execute(new LoginUserCommand(body))
 
     if (!userId) {
       throw new UnauthorizedException()
@@ -102,14 +112,14 @@ export class AuthController {
   private async passwordRecovery(@Body() body: AuthPassRecoveryDto) {
     const { email } = body
 
-    await this.authService.passwordRecovery(email)
+    await this.commandBus.execute(new PasswordRecoveryCommand(email))
   }
 
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updatePassword(@Body() body: AuthUpdatePassDto) {
-    await this.authService.updateUserPassword(body)
+    await this.commandBus.execute(new UpdateUserPasswordCommand(body))
   }
 
   @UseGuards(JwtAuthGuard)
@@ -184,7 +194,7 @@ export class AuthController {
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registration(@Body() body: AuthRegNewUserDto) {
-    const result = await this.authService.registration(body)
+    const result = await this.commandBus.execute(new CreateUserCommand(body))
 
     if (!result) {
       throw new BadRequestException()
@@ -197,7 +207,7 @@ export class AuthController {
   private async registrationConfirmation(@Body() body: AuthRegConfirmCodeDto) {
     const { code } = body
 
-    await this.authService.confirmEmail(code)
+    await this.commandBus.execute(new ConfirmEmailCommand(code))
   }
 
   @Throttle({ default: { limit: 5, ttl: 13000 } })
@@ -207,6 +217,6 @@ export class AuthController {
   private async registrationEmailResending(@Body() body: AuthRegEmailDto) {
     const { email } = body
 
-    await this.authService.registrationEmailResending(email)
+    await this.commandBus.execute(new RegistrationEmailResendingCommand(email))
   }
 }

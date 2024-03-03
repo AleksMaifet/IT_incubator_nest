@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common'
 import {
   IsNotEmpty,
   IsString,
@@ -7,23 +8,25 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import { Injectable } from '@nestjs/common'
+import { Transform } from 'class-transformer'
 import {
   MAX_LOGIN_LENGTH,
   MAX_PASSWORD_LENGTH,
   MIN_LOGIN_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from '../constants'
-import { Transform } from 'class-transformer'
-import { UsersRepository } from '../../users'
+import { UsersRepository, UsersSqlRepository } from '../../users'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomUserValidationByEmail implements ValidatorConstraintInterface {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
+  ) {}
 
   async validate(loginOrEmail: string) {
-    const user = await this.usersRepository.getByLoginOrEmail(loginOrEmail)
+    const user = await this.usersSqlRepository.getByLoginOrEmail(loginOrEmail)
 
     return !user
   }
@@ -36,10 +39,13 @@ class CustomUserValidationByEmail implements ValidatorConstraintInterface {
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomUserValidationByLogin implements ValidatorConstraintInterface {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
+  ) {}
 
   async validate(loginOrEmail: string) {
-    const user = await this.usersRepository.getByLoginOrEmail(loginOrEmail)
+    const user = await this.usersSqlRepository.getByLoginOrEmail(loginOrEmail)
 
     return !user
   }

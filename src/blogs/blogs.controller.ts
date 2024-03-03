@@ -28,7 +28,7 @@ import { BasicAuthGuard } from '../libs/guards'
 export class BlogsController {
   constructor(
     private readonly blogsService: BlogsService,
-    private commandBus: CommandBus,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @Get()

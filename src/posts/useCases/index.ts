@@ -1,1 +1,1 @@
-export * from './createPost.use.case'
+export * from './createPost.useCase'

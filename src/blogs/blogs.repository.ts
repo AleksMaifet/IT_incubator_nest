@@ -15,7 +15,7 @@ class BlogsRepository {
   private async getAllBySearchNameTerm(dto: GetBlogsRequestQuery<number>) {
     const { searchNameTerm, ...rest } = dto
 
-    const regex = new RegExp(searchNameTerm!, 'i')
+    const regex = new RegExp(searchNameTerm, 'i')
     const totalCount = await this.blogModel
       .find({ name: { $regex: regex } })
       .countDocuments()

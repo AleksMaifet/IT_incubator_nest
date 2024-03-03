@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { SecurityDevicesRepository } from './security-devices.repository'
 import { IRefreshTokenMeta } from './interface'
+import { SecurityDevicesSqlRepository } from './security-devices.sql.repository'
 
 @Injectable()
 export class SecurityDevicesService {
   constructor(
     private readonly securityDevicesRepository: SecurityDevicesRepository,
+    private readonly securityDevicesSqlRepository: SecurityDevicesSqlRepository,
   ) {}
 
   private _mapTimeStampsToDB({
@@ -41,7 +43,7 @@ export class SecurityDevicesService {
 
     const { iat, exp } = timeSteps
 
-    return await this.securityDevicesRepository.createRefreshTokenMeta({
+    return await this.securityDevicesSqlRepository.createRefreshTokenMeta({
       userId,
       deviceId,
       issuedAt: iat,
@@ -63,7 +65,7 @@ export class SecurityDevicesService {
 
     const { iat, exp } = timeSteps
 
-    return await this.securityDevicesRepository.updateRefreshTokenMeta({
+    return await this.securityDevicesSqlRepository.updateRefreshTokenMeta({
       userId,
       deviceId,
       issuedAt: iat,
@@ -83,7 +85,7 @@ export class SecurityDevicesService {
 
     const { iat, exp } = timeSteps
 
-    return await this.securityDevicesRepository.getRefreshTokenMeta({
+    return await this.securityDevicesSqlRepository.getRefreshTokenMeta({
       userId,
       deviceId,
       issuedAt: iat,
@@ -94,28 +96,24 @@ export class SecurityDevicesService {
   public async deleteRefreshTokenMeta(
     dto: Pick<IRefreshTokenMeta, 'userId' | 'deviceId'>,
   ) {
-    return await this.securityDevicesRepository.deleteRefreshTokenMeta(dto)
-  }
-
-  public async deleteExpiredRefreshToken() {
-    return await this.securityDevicesRepository.deleteExpiredRefreshToken()
+    return await this.securityDevicesSqlRepository.deleteRefreshTokenMeta(dto)
   }
 
   public async getAllDevices(id: string) {
-    return await this.securityDevicesRepository.getAllDevices(id)
+    return await this.securityDevicesSqlRepository.getAllDevices(id)
   }
 
   public async getDeviceByDeviceId(id: string) {
-    return await this.securityDevicesRepository.getDeviceByDeviceId(id)
+    return await this.securityDevicesSqlRepository.getDeviceByDeviceId(id)
   }
 
   public async deleteAllDevices(
     dto: Pick<IRefreshTokenMeta, 'userId' | 'deviceId'>,
   ) {
-    return await this.securityDevicesRepository.deleteAllDevices(dto)
+    return await this.securityDevicesSqlRepository.deleteAllDevices(dto)
   }
 
   public async deleteDeviceByDeviceId(id: string) {
-    return await this.securityDevicesRepository.deleteDeviceByDeviceId(id)
+    return await this.securityDevicesSqlRepository.deleteDeviceByDeviceId(id)
   }
 }

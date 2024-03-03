@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import { DEFAULT_TEST_DATA } from './data'
 import { AppModule } from '../src/app.module'
-import { DatabaseModule } from '../src/configs'
+import { MongoDatabaseModule } from '../src/configs'
 import { appSettings } from '../src/app.settings'
 import {
   getRefreshToken,
@@ -28,7 +28,7 @@ describe('Post likes', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideModule(DatabaseModule)
+      .overrideModule(MongoDatabaseModule)
       .useModule(
         MongooseModule.forRootAsync({
           useFactory: async () => {

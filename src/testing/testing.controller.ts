@@ -8,7 +8,8 @@ class TestingController {
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async cleanDBs() {
-    return await this.testingRepository.deleteAll()
+    await this.testingRepository.deleteAllFromMongo()
+    await this.testingRepository.deleteAllFromPostgres()
   }
 }
 

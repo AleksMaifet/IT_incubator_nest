@@ -7,26 +7,29 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import { UsersRepository } from '../../users'
+import { UsersRepository, UsersSqlRepository } from '../../users'
 import { AuthRepository } from '../auth.repository'
+import { AuthSqlRepository } from '../auth.sql.repository'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomRegEmailValidation implements ValidatorConstraintInterface {
   constructor(
     private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
     private readonly authRepository: AuthRepository,
+    private readonly authSqlRepository: AuthSqlRepository,
   ) {}
 
   async validate(email: string) {
-    const user = await this.usersRepository.getByLoginOrEmail(email)
+    const user = await this.usersSqlRepository.getByLoginOrEmail(email)
 
     if (!user) return false
 
     const { id } = user
 
     const confirmation =
-      await this.authRepository.getEmailConfirmationByCodeOrUserId(id)
+      await this.authSqlRepository.getConfirmationByCodeOrUserId(id)
 
     return !!confirmation
   }

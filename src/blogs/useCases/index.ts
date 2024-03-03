@@ -1,2 +1,2 @@
-export * from './createPostByBlogId.use.case'
-export * from './getPostsByBlogId.use.case'
+export * from './createPostByBlogId.useCase'
+export * from './getPostsByBlogId.useCase'

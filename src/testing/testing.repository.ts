@@ -1,6 +1,8 @@
+import { InjectDataSource } from '@nestjs/typeorm'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { DataSource } from 'typeorm'
 import { UserModel } from '../users'
 import { BlogModel } from '../blogs'
 import { PostModel } from '../posts'
@@ -14,6 +16,7 @@ class TestingRepository {
   constructor(
     @InjectModel(UserModel.name)
     private readonly userModel: Model<UserModel>,
+    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectModel(BlogModel.name)
     private readonly blogModel: Model<BlogModel>,
     @InjectModel(PostModel.name)
@@ -28,7 +31,7 @@ class TestingRepository {
     private readonly refreshTokenMetaModel: Model<RefreshTokenMetaModel>,
   ) {}
 
-  public async deleteAll() {
+  public async deleteAllFromMongo() {
     await this.blogModel.deleteMany()
     await this.postModel.deleteMany()
     await this.userModel.deleteMany()
@@ -36,6 +39,12 @@ class TestingRepository {
     await this.confirmationModel.deleteMany()
     await this.LikeModel.deleteMany()
     await this.refreshTokenMetaModel.deleteMany()
+  }
+
+  public async deleteAllFromPostgres() {
+    await this.dataSource.query(`
+    TRUNCATE users, confirmation, "refreshTokenMeta"
+    `)
   }
 }
 

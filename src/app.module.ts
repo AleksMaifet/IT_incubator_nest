@@ -3,7 +3,11 @@ import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TestingModule } from './testing'
-import { DatabaseModule, JwtService } from './configs'
+import {
+  MongoDatabaseModule,
+  JwtService,
+  PostgresDatabaseModule,
+} from './configs'
 import {
   CustomPostValidationByBlogId,
   PostModel,
@@ -40,7 +44,8 @@ const useCases = [
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    DatabaseModule,
+    MongoDatabaseModule,
+    PostgresDatabaseModule,
     CqrsModule,
     MongooseModule.forFeature([
       {

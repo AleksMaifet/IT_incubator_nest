@@ -8,8 +8,8 @@ import { MongoService } from './mongo.service'
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) =>
-        new MongoService(configService).getMongoConfig(),
+        new MongoService(configService).getConfig(),
     }),
   ],
 })
-export class DatabaseModule {}
+export class MongoDatabaseModule {}

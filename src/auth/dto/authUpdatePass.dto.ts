@@ -10,17 +10,21 @@ import {
 import { Transform } from 'class-transformer'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../constants'
 import { AuthRepository } from '../auth.repository'
+import { AuthSqlRepository } from '../auth.sql.repository'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomUpdatedPassValidationByRecoveryCode
   implements ValidatorConstraintInterface
 {
-  constructor(private readonly authRepository: AuthRepository) {}
+  constructor(
+    private readonly authRepository: AuthRepository,
+    private readonly authSqlRepository: AuthSqlRepository,
+  ) {}
 
   async validate(code: string) {
     const confirmation =
-      await this.authRepository.getPasswordRecoveryConfirmationByCode(code)
+      await this.authSqlRepository.getConfirmationByCodeOrUserId(code)
 
     switch (true) {
       case !confirmation:

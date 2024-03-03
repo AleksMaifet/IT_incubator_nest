@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { UsersRepository } from '../../users'
+import { UsersRepository, UsersSqlRepository } from '../../users'
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersRepository: UsersRepository,
+    private readonly usersSqlRepository: UsersSqlRepository,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,12 +20,12 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy) {
   public async validate(payload: any) {
     const { userId } = payload
 
-    const { createdAt, id, ...rest } =
-      await this.usersRepository.getById(userId)
+    const user = await this.usersSqlRepository.getById(userId)
 
     return {
       userId,
-      ...rest,
+      login: user?.login,
+      email: user?.email,
     }
   }
 }

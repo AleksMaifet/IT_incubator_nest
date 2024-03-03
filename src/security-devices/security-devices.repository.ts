@@ -62,16 +62,6 @@ class SecurityDevicesRepository {
       .exec()
   }
 
-  public async deleteExpiredRefreshToken() {
-    const currentDate = new Date().toLocaleString('ru-RU')
-
-    return await this.refreshTokenMetaModel
-      .deleteMany({
-        expirationAt: { $lt: currentDate },
-      })
-      .exec()
-  }
-
   public async getAllDevices(userId: string) {
     const devices = await this.refreshTokenMetaModel.find({ userId }).exec()
 

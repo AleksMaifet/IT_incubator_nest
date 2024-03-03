@@ -6,37 +6,45 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
-  Param,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common'
-import { UsersService } from './users.service'
+import { CommandBus } from '@nestjs/cqrs'
 import { GetUsersRequestQuery } from './interfaces'
 import { CreateUserDto } from './dto'
 import { BasicAuthGuard } from '../libs/guards'
+import { UUIDParam } from '../libs/decorators'
+import {
+  CreateUserCommand,
+  DeleteUserByIdCommand,
+  GetAllUsersCommand,
+} from './useCases'
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @UseGuards(BasicAuthGuard)
   @Get()
   private async getAll(@Query() query: GetUsersRequestQuery<string>) {
-    return await this.usersService.getAll(query)
+    return await this.commandBus.execute(new GetAllUsersCommand(query))
   }
 
   @UseGuards(BasicAuthGuard)
   @Post()
   private async create(@Body() body: CreateUserDto) {
-    return await this.usersService.create(body)
+    return await this.commandBus.execute(new CreateUserCommand(body))
   }
 
   @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  private async deleteById(@Param('id') id: string) {
-    const result = await this.usersService.deleteById(id)
+  private async deleteById(
+    @UUIDParam('id')
+    id: string,
+  ) {
+    const result = await this.commandBus.execute(new DeleteUserByIdCommand(id))
 
     if (!result) {
       throw new NotFoundException({ message: 'users is not exists' })

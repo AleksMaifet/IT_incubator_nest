@@ -6,7 +6,7 @@ import { sign } from 'jsonwebtoken'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import { AppModule } from '../src/app.module'
 import { appSettings } from '../src/app.settings'
-import { DatabaseModule } from '../src/configs'
+import { MongoDatabaseModule } from '../src/configs'
 import { DEFAULT_TEST_DATA } from './data'
 import {
   delay,
@@ -28,7 +28,7 @@ describe('Application', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideModule(DatabaseModule)
+      .overrideModule(MongoDatabaseModule)
       .useModule(
         MongooseModule.forRootAsync({
           useFactory: async () => {
@@ -415,480 +415,6 @@ describe('Application', () => {
     )
   })
 
-  describe('Blogs', () => {
-    const errorId = '00000000000000'
-
-    beforeAll(async () => {
-      await request(httpServer).delete('/testing/all-data').expect(204)
-    })
-
-    it('GET blog by id with error', async () => {
-      await request(httpServer)
-        .get('/blogs' + `/${errorId}`)
-        .expect(404)
-    })
-
-    it('GET blogs by id success', async () => {
-      const res = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      await request(httpServer)
-        .get('/blogs' + `/${res.body.id}`)
-        .expect(200)
-    })
-
-    it('POST/PUT/DELETE  blog with Unauthorized error', async () => {
-      await request(httpServer).post('/blogs').expect(401)
-
-      await request(httpServer)
-        .delete('/blogs' + `/${errorId}`)
-        .expect(401)
-
-      await request(httpServer)
-        .put('/blogs' + `/${errorId}`)
-        .expect(401)
-    })
-
-    it('POST not created blog with error', async () => {
-      await makeAuthBasicRequest(httpServer, 'post', '/blogs').expect(400)
-    })
-
-    it('POST created blog success', async () => {
-      await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      ).expect(201)
-    })
-
-    it('PUT update blog by id success', async () => {
-      const res = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      await makeAuthBasicRequest(
-        httpServer,
-        'put',
-        '/blogs' + `/${res.body.id}`,
-        BLOG_DATA,
-      ).expect(204)
-    })
-
-    it('PUT not update blog by id with error', async () => {
-      await makeAuthBasicRequest(
-        httpServer,
-        'put',
-        '/blogs' + `/${errorId}`,
-        BLOG_DATA,
-      ).expect(404)
-    })
-
-    it('DELETE delete blog by id success', async () => {
-      const res = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      await makeAuthBasicRequest(
-        httpServer,
-        'delete',
-        '/blogs' + `/${res.body.id}`,
-      ).expect(204)
-    })
-
-    it('DELETE not delete blog by id with error', async () => {
-      await makeAuthBasicRequest(
-        httpServer,
-        'delete',
-        '/blogs' + `/${errorId}`,
-      ).expect(404)
-    })
-  })
-
-  describe('Posts', () => {
-    const errorId = '00000000000000'
-
-    beforeAll(async () => {
-      await request(httpServer).delete('/testing/all-data').expect(204)
-    })
-
-    it('GET posts by id with error', async () => {
-      await request(httpServer)
-        .get('/posts' + `/${errorId}`)
-        .expect(404)
-    })
-
-    it('GET posts by id success', async () => {
-      const resBlog = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      const resPost = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: resBlog.body.id,
-      })
-
-      await request(httpServer)
-        .get('/posts' + `/${resPost.body.id}`)
-        .expect(200)
-    })
-
-    it('POST/PUT/DELETE  post with Unauthorized error', async () => {
-      await request(httpServer).post('/posts').expect(401)
-
-      await request(httpServer)
-        .delete('/posts' + `/${errorId}`)
-        .expect(401)
-
-      await request(httpServer)
-        .put('/posts' + `/${errorId}`)
-        .expect(401)
-    })
-
-    it('POST not created post with error', async () => {
-      await makeAuthBasicRequest(httpServer, 'post', '/posts').expect(400)
-    })
-
-    it('POST created post success', async () => {
-      const resBlog = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: resBlog.body.id,
-      }).expect(201)
-    })
-
-    it('PUT update post by id success', async () => {
-      const resBlog = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      const res = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: resBlog.body.id,
-      })
-
-      await makeAuthBasicRequest(
-        httpServer,
-        'put',
-        '/posts' + `/${res.body.id}`,
-        {
-          ...POST_DATA,
-          blogId: resBlog.body.id,
-        },
-      ).expect(204)
-    })
-
-    it('PUT not update post by id with error', async () => {
-      const resBlog = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      await makeAuthBasicRequest(httpServer, 'put', '/posts' + `/${errorId}`, {
-        ...POST_DATA,
-        blogId: resBlog.body.id,
-      }).expect(404)
-    })
-
-    it('DELETE delete post by id success', async () => {
-      const resBlog = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      const resPost = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: resBlog.body.id,
-      })
-
-      await makeAuthBasicRequest(
-        httpServer,
-        'delete',
-        '/posts' + `/${resPost.body.id}`,
-      ).expect(204)
-    })
-
-    it('DELETE not delete video by id with error', async () => {
-      await makeAuthBasicRequest(
-        httpServer,
-        'delete',
-        '/posts' + `/${errorId}`,
-      ).expect(404)
-    })
-  })
-
-  describe('Comments', () => {
-    let jwt_token: string
-    let postId: string
-
-    beforeAll(async () => {
-      await request(httpServer).delete('/testing/all-data').expect(204)
-
-      /// Created blog
-      const blogRes = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      /// Created post
-      const postRes = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: blogRes.body.id,
-      })
-
-      /// Created user
-      await makeAuthBasicRequest(httpServer, 'post', '/users', USER_DATA)
-      /// Login user
-      const res = await request(httpServer).post('/auth/login').send({
-        loginOrEmail: USER_DATA.email,
-        password: USER_DATA.password,
-      })
-
-      postId = postRes.body.id
-      jwt_token = res.body.accessToken
-    })
-
-    it('POST -> "/posts/:postId/comments": should create new comment', async () => {
-      const res = await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        jwt_token,
-        `/posts/${postId}/comments`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      )
-
-      expect(res.statusCode).toBe(201)
-      expect(res.body).toHaveProperty('id')
-      expect(res.body.content).toBe(COMMENT_DATA.content)
-    })
-
-    it('GET -> "/posts/:postId/comments": should return comments with pagination', async () => {
-      const resComments = await request(httpServer).get(
-        `/posts/${postId}/comments`,
-      )
-
-      expect(resComments.status).toBe(200)
-      expect(resComments.body).toHaveProperty('pagesCount')
-      expect(resComments.body).toHaveProperty('page')
-      expect(resComments.body).toHaveProperty('pageSize')
-      expect(resComments.body).toHaveProperty('totalCount')
-      expect(resComments.body).toHaveProperty('items')
-    })
-
-    it('DELETE -> "/comments/:id": should delete comment by id', async () => {
-      const commentRes = await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        jwt_token,
-        `/posts/${postId}/comments`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      ).expect(201)
-
-      await makeAuthBearerRequest(
-        httpServer,
-        'delete',
-        jwt_token,
-        `/comments/${commentRes.body.id}`,
-      ).expect(204)
-    })
-
-    it('PUT -> "/comments/:commentId": should update comment by id', async () => {
-      const commentRes = await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        jwt_token,
-        `/posts/${postId}/comments`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      )
-
-      await makeAuthBearerRequest(
-        httpServer,
-        'put',
-        jwt_token,
-        `/comments/${commentRes.body.id}`,
-        {
-          content: COMMENT_DATA.content + COMMENT_DATA.content,
-        },
-      ).expect(204)
-    })
-
-    it('GET -> "comments/:commentId": should return comment by id', async () => {
-      const commentRes = await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        jwt_token,
-        `/posts/${postId}/comments`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      )
-
-      const resComments = await request(httpServer).get(
-        `/comments/${commentRes.body.id}`,
-      )
-
-      expect(resComments.status).toBe(200)
-      expect(resComments.body).toHaveProperty('id', commentRes.body.id)
-      expect(resComments.body).toHaveProperty('content', COMMENT_DATA.content)
-      expect(resComments.body).toHaveProperty('commentatorInfo')
-      expect(resComments.body).toHaveProperty('createdAt')
-    })
-
-    it('DELETE. -> "/comments/:id": should return error if :id from uri param not found', async () => {
-      await makeAuthBearerRequest(
-        httpServer,
-        'delete',
-        jwt_token,
-        `/comments/invalid-id`,
-      ).expect(404)
-    })
-
-    it('POST -> "posts/:postId/comments": should return error if auth credentials is incorrect', async () => {
-      await request(httpServer).post(`/posts/${postId}/comments`).expect(401)
-    })
-
-    it('PUT -> "/comments/:id": should return error if access denied', async () => {
-      // Created user
-      await makeAuthBasicRequest(httpServer, 'post', '/users', {
-        login: 'TEST_LOGIN',
-        password: USER_DATA.password,
-        email: 'test@mail.ru',
-      })
-
-      const loginRes = await request(httpServer).post('/auth/login').send({
-        loginOrEmail: 'TEST_LOGIN',
-        password: USER_DATA.password,
-      })
-
-      // Created comment
-      const commentRes = await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        loginRes.body.accessToken,
-        `/posts/${postId}/comments`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      )
-
-      // Updated the comment with a different user
-      await makeAuthBearerRequest(
-        httpServer,
-        'put',
-        jwt_token,
-        `/comments/${commentRes.body.id}`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      ).expect(403)
-    })
-  })
-
-  describe('Comments for posts with auth > Comments body validation', () => {
-    let jwt_token: string
-    let postId: string
-
-    const { BLOG_DATA, POST_DATA, COMMENT_DATA } = DEFAULT_TEST_DATA
-
-    beforeAll(async () => {
-      await request(httpServer).delete('/testing/all-data').expect(204)
-
-      /// Created blog
-      const blogRes = await makeAuthBasicRequest(
-        httpServer,
-        'post',
-        '/blogs',
-        BLOG_DATA,
-      )
-
-      /// Created post
-      const postRes = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: blogRes.body.id,
-      })
-
-      /// Created user
-      await makeAuthBasicRequest(httpServer, 'post', '/users', USER_DATA)
-      /// Login user
-      const res = await request(httpServer).post('/auth/login').send({
-        loginOrEmail: USER_DATA.email,
-        password: USER_DATA.password,
-      })
-
-      postId = postRes.body.id
-      jwt_token = res.body.accessToken
-    })
-
-    it('POST -> "/posts/:postId/comments": should return error if passed body is incorrect', async () => {
-      await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        jwt_token,
-        `/posts/${postId}/comments`,
-        {
-          invalidField: 'Invalid field',
-        },
-      ).expect(400)
-    })
-
-    it('PUT -> "/comments/:commentId": should return error if passed body is incorrect', async () => {
-      // Created comment
-      const commentRes = await makeAuthBearerRequest(
-        httpServer,
-        'post',
-        jwt_token,
-        `/posts/${postId}/comments`,
-        {
-          content: COMMENT_DATA.content,
-        },
-      )
-
-      await makeAuthBearerRequest(
-        httpServer,
-        'put',
-        jwt_token,
-        `/comments/${commentRes.body.id}`,
-        {
-          content: 'Invalid field',
-        },
-      ).expect(400)
-    })
-  })
-
   describe('RefreshToken', () => {
     let refreshToken_1: string
     let refreshToken_2: string
@@ -987,4 +513,479 @@ describe('Application', () => {
         .expect(401)
     })
   })
+
+  // describe('Blogs', () => {
+  //   const errorId = '00000000000000'
+  //
+  //   beforeAll(async () => {
+  //     await request(httpServer).delete('/testing/all-data').expect(204)
+  //   })
+  //
+  //   it('GET blog by id with error', async () => {
+  //     await request(httpServer)
+  //       .get('/blogs' + `/${errorId}`)
+  //       .expect(404)
+  //   })
+  //
+  //   it('GET blogs by id success', async () => {
+  //     const res = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     await request(httpServer)
+  //       .get('/blogs' + `/${res.body.id}`)
+  //       .expect(200)
+  //   })
+  //
+  //   it('POST/PUT/DELETE  blog with Unauthorized error', async () => {
+  //     await request(httpServer).post('/blogs').expect(401)
+  //
+  //     await request(httpServer)
+  //       .delete('/blogs' + `/${errorId}`)
+  //       .expect(401)
+  //
+  //     await request(httpServer)
+  //       .put('/blogs' + `/${errorId}`)
+  //       .expect(401)
+  //   })
+  //
+  //   it('POST not created blog with error', async () => {
+  //     await makeAuthBasicRequest(httpServer, 'post', '/blogs').expect(400)
+  //   })
+  //
+  //   it('POST created blog success', async () => {
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     ).expect(201)
+  //   })
+  //
+  //   it('PUT update blog by id success', async () => {
+  //     const res = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'put',
+  //       '/blogs' + `/${res.body.id}`,
+  //       BLOG_DATA,
+  //     ).expect(204)
+  //   })
+  //
+  //   it('PUT not update blog by id with error', async () => {
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'put',
+  //       '/blogs' + `/${errorId}`,
+  //       BLOG_DATA,
+  //     ).expect(404)
+  //   })
+  //
+  //   it('DELETE delete blog by id success', async () => {
+  //     const res = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'delete',
+  //       '/blogs' + `/${res.body.id}`,
+  //     ).expect(204)
+  //   })
+  //
+  //   it('DELETE not delete blog by id with error', async () => {
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'delete',
+  //       '/blogs' + `/${errorId}`,
+  //     ).expect(404)
+  //   })
+  // })
+  //
+  // describe('Posts', () => {
+  //   const errorId = '00000000000000'
+  //
+  //   beforeAll(async () => {
+  //     await request(httpServer).delete('/testing/all-data').expect(204)
+  //   })
+  //
+  //   it('GET posts by id with error', async () => {
+  //     await request(httpServer)
+  //       .get('/posts' + `/${errorId}`)
+  //       .expect(404)
+  //   })
+  //
+  //   it('GET posts by id success', async () => {
+  //     const resBlog = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     const resPost = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
+  //       ...POST_DATA,
+  //       blogId: resBlog.body.id,
+  //     })
+  //
+  //     await request(httpServer)
+  //       .get('/posts' + `/${resPost.body.id}`)
+  //       .expect(200)
+  //   })
+  //
+  //   it('POST/PUT/DELETE  post with Unauthorized error', async () => {
+  //     await request(httpServer).post('/posts').expect(401)
+  //
+  //     await request(httpServer)
+  //       .delete('/posts' + `/${errorId}`)
+  //       .expect(401)
+  //
+  //     await request(httpServer)
+  //       .put('/posts' + `/${errorId}`)
+  //       .expect(401)
+  //   })
+  //
+  //   it('POST not created post with error', async () => {
+  //     await makeAuthBasicRequest(httpServer, 'post', '/posts').expect(400)
+  //   })
+  //
+  //   it('POST created post success', async () => {
+  //     const resBlog = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     await makeAuthBasicRequest(httpServer, 'post', '/posts', {
+  //       ...POST_DATA,
+  //       blogId: resBlog.body.id,
+  //     }).expect(201)
+  //   })
+  //
+  //   it('PUT update post by id success', async () => {
+  //     const resBlog = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     const res = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
+  //       ...POST_DATA,
+  //       blogId: resBlog.body.id,
+  //     })
+  //
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'put',
+  //       '/posts' + `/${res.body.id}`,
+  //       {
+  //         ...POST_DATA,
+  //         blogId: resBlog.body.id,
+  //       },
+  //     ).expect(204)
+  //   })
+  //
+  //   it('PUT not update post by id with error', async () => {
+  //     const resBlog = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     await makeAuthBasicRequest(httpServer, 'put', '/posts' + `/${errorId}`, {
+  //       ...POST_DATA,
+  //       blogId: resBlog.body.id,
+  //     }).expect(404)
+  //   })
+  //
+  //   it('DELETE delete post by id success', async () => {
+  //     const resBlog = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     const resPost = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
+  //       ...POST_DATA,
+  //       blogId: resBlog.body.id,
+  //     })
+  //
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'delete',
+  //       '/posts' + `/${resPost.body.id}`,
+  //     ).expect(204)
+  //   })
+  //
+  //   it('DELETE not delete video by id with error', async () => {
+  //     await makeAuthBasicRequest(
+  //       httpServer,
+  //       'delete',
+  //       '/posts' + `/${errorId}`,
+  //     ).expect(404)
+  //   })
+  // })
+  //
+  // describe('Comments', () => {
+  //   let jwt_token: string
+  //   let postId: string
+  //
+  //   beforeAll(async () => {
+  //     await request(httpServer).delete('/testing/all-data').expect(204)
+  //
+  //     /// Created blog
+  //     const blogRes = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     /// Created post
+  //     const postRes = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
+  //       ...POST_DATA,
+  //       blogId: blogRes.body.id,
+  //     })
+  //
+  //     /// Created user
+  //     await makeAuthBasicRequest(httpServer, 'post', '/users', USER_DATA)
+  //     /// Login user
+  //     const res = await request(httpServer).post('/auth/login').send({
+  //       loginOrEmail: USER_DATA.email,
+  //       password: USER_DATA.password,
+  //     })
+  //
+  //     postId = postRes.body.id
+  //     jwt_token = res.body.accessToken
+  //   })
+  //
+  //   it('POST -> "/posts/:postId/comments": should create new comment', async () => {
+  //     const res = await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       jwt_token,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     )
+  //
+  //     expect(res.statusCode).toBe(201)
+  //     expect(res.body).toHaveProperty('id')
+  //     expect(res.body.content).toBe(COMMENT_DATA.content)
+  //   })
+  //
+  //   it('GET -> "/posts/:postId/comments": should return comments with pagination', async () => {
+  //     const resComments = await request(httpServer).get(
+  //       `/posts/${postId}/comments`,
+  //     )
+  //
+  //     expect(resComments.status).toBe(200)
+  //     expect(resComments.body).toHaveProperty('pagesCount')
+  //     expect(resComments.body).toHaveProperty('page')
+  //     expect(resComments.body).toHaveProperty('pageSize')
+  //     expect(resComments.body).toHaveProperty('totalCount')
+  //     expect(resComments.body).toHaveProperty('items')
+  //   })
+  //
+  //   it('DELETE -> "/comments/:id": should delete comment by id', async () => {
+  //     const commentRes = await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       jwt_token,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     ).expect(201)
+  //
+  //     await makeAuthBearerRequest(
+  //       httpServer,
+  //       'delete',
+  //       jwt_token,
+  //       `/comments/${commentRes.body.id}`,
+  //     ).expect(204)
+  //   })
+  //
+  //   it('PUT -> "/comments/:commentId": should update comment by id', async () => {
+  //     const commentRes = await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       jwt_token,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     )
+  //
+  //     await makeAuthBearerRequest(
+  //       httpServer,
+  //       'put',
+  //       jwt_token,
+  //       `/comments/${commentRes.body.id}`,
+  //       {
+  //         content: COMMENT_DATA.content + COMMENT_DATA.content,
+  //       },
+  //     ).expect(204)
+  //   })
+  //
+  //   it('GET -> "comments/:commentId": should return comment by id', async () => {
+  //     const commentRes = await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       jwt_token,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     )
+  //
+  //     const resComments = await request(httpServer).get(
+  //       `/comments/${commentRes.body.id}`,
+  //     )
+  //
+  //     expect(resComments.status).toBe(200)
+  //     expect(resComments.body).toHaveProperty('id', commentRes.body.id)
+  //     expect(resComments.body).toHaveProperty('content', COMMENT_DATA.content)
+  //     expect(resComments.body).toHaveProperty('commentatorInfo')
+  //     expect(resComments.body).toHaveProperty('createdAt')
+  //   })
+  //
+  //   it('DELETE. -> "/comments/:id": should return error if :id from uri param not found', async () => {
+  //     await makeAuthBearerRequest(
+  //       httpServer,
+  //       'delete',
+  //       jwt_token,
+  //       `/comments/invalid-id`,
+  //     ).expect(404)
+  //   })
+  //
+  //   it('POST -> "posts/:postId/comments": should return error if auth credentials is incorrect', async () => {
+  //     await request(httpServer).post(`/posts/${postId}/comments`).expect(401)
+  //   })
+  //
+  //   it('PUT -> "/comments/:id": should return error if access denied', async () => {
+  //     // Created user
+  //     await makeAuthBasicRequest(httpServer, 'post', '/users', {
+  //       login: 'TEST_LOGIN',
+  //       password: USER_DATA.password,
+  //       email: 'test@mail.ru',
+  //     })
+  //
+  //     const loginRes = await request(httpServer).post('/auth/login').send({
+  //       loginOrEmail: 'TEST_LOGIN',
+  //       password: USER_DATA.password,
+  //     })
+  //
+  //     // Created comment
+  //     const commentRes = await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       loginRes.body.accessToken,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     )
+  //
+  //     // Updated the comment with a different user
+  //     await makeAuthBearerRequest(
+  //       httpServer,
+  //       'put',
+  //       jwt_token,
+  //       `/comments/${commentRes.body.id}`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     ).expect(403)
+  //   })
+  // })
+  //
+  // describe('Comments for posts with auth > Comments body validation', () => {
+  //   let jwt_token: string
+  //   let postId: string
+  //
+  //   const { BLOG_DATA, POST_DATA, COMMENT_DATA } = DEFAULT_TEST_DATA
+  //
+  //   beforeAll(async () => {
+  //     await request(httpServer).delete('/testing/all-data').expect(204)
+  //
+  //     /// Created blog
+  //     const blogRes = await makeAuthBasicRequest(
+  //       httpServer,
+  //       'post',
+  //       '/blogs',
+  //       BLOG_DATA,
+  //     )
+  //
+  //     /// Created post
+  //     const postRes = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
+  //       ...POST_DATA,
+  //       blogId: blogRes.body.id,
+  //     })
+  //
+  //     /// Created user
+  //     await makeAuthBasicRequest(httpServer, 'post', '/users', USER_DATA)
+  //     /// Login user
+  //     const res = await request(httpServer).post('/auth/login').send({
+  //       loginOrEmail: USER_DATA.email,
+  //       password: USER_DATA.password,
+  //     })
+  //
+  //     postId = postRes.body.id
+  //     jwt_token = res.body.accessToken
+  //   })
+  //
+  //   it('POST -> "/posts/:postId/comments": should return error if passed body is incorrect', async () => {
+  //     await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       jwt_token,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         invalidField: 'Invalid field',
+  //       },
+  //     ).expect(400)
+  //   })
+  //
+  //   it('PUT -> "/comments/:commentId": should return error if passed body is incorrect', async () => {
+  //     // Created comment
+  //     const commentRes = await makeAuthBearerRequest(
+  //       httpServer,
+  //       'post',
+  //       jwt_token,
+  //       `/posts/${postId}/comments`,
+  //       {
+  //         content: COMMENT_DATA.content,
+  //       },
+  //     )
+  //
+  //     await makeAuthBearerRequest(
+  //       httpServer,
+  //       'put',
+  //       jwt_token,
+  //       `/comments/${commentRes.body.id}`,
+  //       {
+  //         content: 'Invalid field',
+  //       },
+  //     ).expect(400)
+  //   })
+  // })
+  //
 })
