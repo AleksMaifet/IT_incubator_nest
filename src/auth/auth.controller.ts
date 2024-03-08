@@ -189,7 +189,7 @@ export class AuthController {
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }
 
-  @Throttle({ default: { limit: 5, ttl: 14000 } })
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -210,7 +210,7 @@ export class AuthController {
     await this.commandBus.execute(new ConfirmEmailCommand(code))
   }
 
-  @Throttle({ default: { limit: 5, ttl: 13000 } })
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)

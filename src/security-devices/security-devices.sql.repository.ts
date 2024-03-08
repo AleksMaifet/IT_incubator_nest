@@ -103,7 +103,7 @@ class SecurityDevicesSqlRepository {
     SELECT
         "clientIp" AS ip,
         "deviceName" AS title,
-        "issuedAt" AS lastActiveDate,
+        "issuedAt" AS "lastActiveDate",
         "deviceId"
     FROM
         "refreshTokenMeta"
@@ -121,7 +121,7 @@ class SecurityDevicesSqlRepository {
         "userId",      
         "clientIp" AS ip,
         "deviceName" AS title,
-        "issuedAt" AS lastActiveDate,
+        "issuedAt" AS "lastActiveDate",
         "deviceId"
      FROM
         "refreshTokenMeta"
