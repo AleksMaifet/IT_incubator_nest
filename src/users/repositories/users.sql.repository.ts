@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { GetUsersRequestQuery, IUser, IUsersResponse } from './interfaces'
+import { GetUsersRequestQuery, IUser, IUsersResponse } from '../interfaces'
 
 @Injectable()
 class UsersSqlRepository {

@@ -8,17 +8,15 @@ import { AdapterEmail } from '../adapters'
 import { JwtService } from '../configs'
 import { RefreshTokenStrategy } from '../libs/strategies'
 import { SecurityDevicesModule } from '../security-devices/security-devices.module'
-import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { ConfirmationModel, ConfirmationSchema } from './confirmation.model'
-import { AuthRepository } from './auth.repository'
+import { AuthRepository, AuthSqlRepository } from './repositories'
 import {
   CustomRegEmailValidation,
   CustomUpdatedPassValidationByRecoveryCode,
   CustomUserValidationByEmail,
   CustomUserValidationByLogin,
 } from './dto'
-import { AuthSqlRepository } from './auth.sql.repository'
 import {
   ConfirmEmailUseCase,
   CreateUserUseCase,
@@ -61,7 +59,6 @@ const useCases = [
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
     AuthRepository,
     AuthSqlRepository,
     ManagerEmail,

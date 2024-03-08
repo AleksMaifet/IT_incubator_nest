@@ -8,8 +8,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator'
 import { UsersRepository, UsersSqlRepository } from '../../users'
-import { AuthRepository } from '../auth.repository'
-import { AuthSqlRepository } from '../auth.sql.repository'
+import { AuthRepository, AuthSqlRepository } from '../repositories'
 
 @ValidatorConstraint({ async: true })
 @Injectable()

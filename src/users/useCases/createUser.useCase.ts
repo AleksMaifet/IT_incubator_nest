@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { UsersService } from '../users.service'
-import { UsersSqlRepository } from '../users.sql.repository'
+import { UsersSqlRepository } from '../repositories'
 import { CreateUserDto } from '../dto'
 import { User } from '../user.entity'
 

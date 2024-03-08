@@ -10,8 +10,7 @@ import {
 import { Transform } from 'class-transformer'
 import { validate } from 'uuid'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../constants'
-import { AuthRepository } from '../auth.repository'
-import { AuthSqlRepository } from '../auth.sql.repository'
+import { AuthRepository, AuthSqlRepository } from '../repositories'
 
 @ValidatorConstraint({ async: true })
 @Injectable()

@@ -1,6 +1,5 @@
 export * from './users.controller'
-export * from './users.repository'
-export * from './users.sql.repository'
+export * from './repositories'
 export * from './users.service'
 export * from './user.model'
 export * from './users.module'

@@ -4,9 +4,8 @@ import { CqrsModule } from '@nestjs/cqrs'
 import { UsersController } from './users.controller'
 import { UsersService } from './users.service'
 import { UserModel, UserSchema } from './user.model'
-import { UsersRepository } from './users.repository'
 import { CustomUserValidationByEmail, CustomUserValidationByLogin } from './dto'
-import { UsersSqlRepository } from './users.sql.repository'
+import { UsersSqlRepository, UsersRepository } from './repositories'
 import {
   CreateUserUseCase,
   DeleteUserByIdUseCase,

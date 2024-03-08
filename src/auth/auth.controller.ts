@@ -17,7 +17,6 @@ import { CommandBus } from '@nestjs/cqrs'
 import { Response } from 'express'
 import { parse } from 'useragent'
 import { JwtService } from '../configs'
-import { AuthService } from './auth.service'
 import {
   AuthPassRecoveryDto,
   AuthRegConfirmCodeDto,
@@ -34,7 +33,12 @@ import {
   ThrottlerBehindProxyGuard,
 } from '../libs/guards'
 import { IJwtUser } from '../libs/interfaces'
-import { SecurityDevicesService } from '../security-devices'
+import {
+  CreateRefreshTokenMetaCommand,
+  DeleteRefreshTokenMetaCommand,
+  GetRefreshTokenMetaCommand,
+  UpdateRefreshTokenMetaCommand,
+} from '../security-devices'
 import {
   ConfirmEmailCommand,
   CreateUserCommand,
@@ -47,9 +51,7 @@ import {
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
     private readonly jwtService: JwtService,
-    private readonly securityDevicesService: SecurityDevicesService,
     private readonly commandBus: CommandBus,
   ) {}
 
@@ -58,12 +60,14 @@ export class AuthController {
   ) {
     const { userId, deviceId, iat, exp } = payload
 
-    return await this.securityDevicesService.getRefreshTokenMeta({
-      userId,
-      deviceId,
-      issuedAt: iat,
-      expirationAt: exp,
-    })
+    return await this.commandBus.execute(
+      new GetRefreshTokenMetaCommand({
+        userId,
+        deviceId,
+        issuedAt: iat,
+        expirationAt: exp,
+      }),
+    )
   }
 
   @UseGuards(ThrottlerBehindProxyGuard)
@@ -87,14 +91,16 @@ export class AuthController {
 
     const { deviceId, iat, exp } = payload
 
-    await this.securityDevicesService.createRefreshTokenMeta({
-      userId,
-      deviceId,
-      issuedAt: iat,
-      expirationAt: exp,
-      deviceName: parse(userAgent!).family,
-      clientIp: ip!,
-    })
+    await this.commandBus.execute(
+      new CreateRefreshTokenMetaCommand({
+        userId,
+        deviceId,
+        issuedAt: iat,
+        expirationAt: exp,
+        deviceName: parse(userAgent!).family,
+        clientIp: ip!,
+      }),
+    )
 
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshJwtToken, {
       httpOnly: true,
@@ -149,12 +155,14 @@ export class AuthController {
 
     const { userId: currentUserId, iat, exp } = payload
 
-    await this.securityDevicesService.updateRefreshTokenMeta({
-      userId: currentUserId,
-      deviceId,
-      issuedAt: iat,
-      expirationAt: exp,
-    })
+    await this.commandBus.execute(
+      new UpdateRefreshTokenMetaCommand({
+        userId: currentUserId,
+        deviceId,
+        issuedAt: iat,
+        expirationAt: exp,
+      }),
+    )
 
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshJwtToken, {
       httpOnly: true,
@@ -181,10 +189,12 @@ export class AuthController {
       throw new UnauthorizedException()
     }
 
-    await this.securityDevicesService.deleteRefreshTokenMeta({
-      userId,
-      deviceId,
-    })
+    await this.commandBus.execute(
+      new DeleteRefreshTokenMetaCommand({
+        userId,
+        deviceId,
+      }),
+    )
 
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }

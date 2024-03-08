@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { AuthUpdatePassDto } from '../dto'
 import { UsersService, UsersSqlRepository } from '../../users'
-import { AuthSqlRepository } from '../auth.sql.repository'
+import { AuthSqlRepository } from '../repositories'
 
 class UpdateUserPasswordCommand {
   constructor(public readonly payload: AuthUpdatePassDto) {}

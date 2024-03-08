@@ -1,9 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
+import { Logger } from '@nestjs/common'
 import { User, UsersService, UsersSqlRepository } from '../../users'
 import { EmailConfirmation } from '../entities'
-import { AuthSqlRepository } from '../auth.sql.repository'
-import { AuthService } from '../auth.service'
+import { AuthSqlRepository } from '../repositories'
 import { AuthRegNewUserDto } from '../dto'
+import { ManagerEmail } from '../../managers'
 
 class CreateUserCommand {
   constructor(public readonly payload: AuthRegNewUserDto) {}
@@ -12,10 +13,11 @@ class CreateUserCommand {
 @CommandHandler(CreateUserCommand)
 class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
-    private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly authSqlRepository: AuthSqlRepository,
     private readonly usersSqlRepository: UsersSqlRepository,
+    private readonly managerEmail: ManagerEmail,
+    private readonly loggerService: Logger,
   ) {}
 
   async execute(command: CreateUserCommand) {
@@ -35,12 +37,22 @@ class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
 
     await this.authSqlRepository.createEmailConfirmation(newEmailConfirmation)
 
-    return await this.authService.sendEmailConfirmationCode({
-      id,
-      email,
-      login,
-      code,
-    })
+    try {
+      const info = await this.managerEmail.sendUserEmailConfirmationCode({
+        login,
+        email,
+        code,
+      })
+
+      this.loggerService.log('Message sent ' + info.response)
+      return true
+    } catch (error) {
+      this.loggerService.error(`NodeMailer ${error}`)
+
+      await this.usersSqlRepository.deleteById(id)
+      await this.authSqlRepository.deleteConfirmationByCodeORUserId(id)
+      return null
+    }
   }
 }
 

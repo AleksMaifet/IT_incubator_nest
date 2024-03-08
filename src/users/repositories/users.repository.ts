@@ -1,8 +1,8 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { Injectable } from '@nestjs/common'
 import { Model } from 'mongoose'
-import { GetUsersRequestQuery, IUser, IUsersResponse } from './interfaces'
-import { UserModel } from './user.model'
+import { GetUsersRequestQuery, IUser, IUsersResponse } from '../interfaces'
+import { UserModel } from '../user.model'
 
 @Injectable()
 class UsersRepository {

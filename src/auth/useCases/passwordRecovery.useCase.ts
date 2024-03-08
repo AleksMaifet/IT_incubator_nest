@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { Logger } from '@nestjs/common'
 import { UsersSqlRepository } from '../../users'
-import { AuthSqlRepository } from '../auth.sql.repository'
+import { AuthSqlRepository } from '../repositories'
 import { PasswordRecoveryConfirmationEntity } from '../entities'
 import { ManagerEmail } from '../../managers'
 

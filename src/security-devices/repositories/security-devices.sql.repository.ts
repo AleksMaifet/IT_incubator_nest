@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { IRefreshTokenMeta } from './interface'
+import { IRefreshTokenMeta } from '../interface'
 
 @Injectable()
 class SecurityDevicesSqlRepository {

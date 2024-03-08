@@ -1,7 +1,10 @@
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
-import { IEmailConfirmation, IPasswordRecoveryConfirmation } from './interfaces'
+import {
+  IEmailConfirmation,
+  IPasswordRecoveryConfirmation,
+} from '../interfaces'
 
 class AuthSqlRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}

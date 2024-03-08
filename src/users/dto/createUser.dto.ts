@@ -15,8 +15,7 @@ import {
   MIN_LOGIN_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from '../constants'
-import { UsersRepository } from '../users.repository'
-import { UsersSqlRepository } from '../users.sql.repository'
+import { UsersRepository, UsersSqlRepository } from '../repositories'
 
 @ValidatorConstraint({ async: true })
 @Injectable()

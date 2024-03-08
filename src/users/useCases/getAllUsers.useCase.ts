@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { GetUsersRequestQuery } from '../interfaces'
 import { DEFAULTS } from '../constants'
-import { UsersSqlRepository } from '../users.sql.repository'
+import { UsersSqlRepository } from '../repositories'
 
 const {
   SEARCH_LOGIN_TERM,
