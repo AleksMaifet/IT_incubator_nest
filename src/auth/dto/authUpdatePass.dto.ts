@@ -8,6 +8,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator'
 import { Transform } from 'class-transformer'
+import { validate } from 'uuid'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../constants'
 import { AuthRepository } from '../auth.repository'
 import { AuthSqlRepository } from '../auth.sql.repository'
@@ -23,6 +24,8 @@ class CustomUpdatedPassValidationByRecoveryCode
   ) {}
 
   async validate(code: string) {
+    if (!validate(code)) return false
+
     const confirmation =
       await this.authSqlRepository.getConfirmationByCodeOrUserId(code)
 
