@@ -189,7 +189,7 @@ export class AuthController {
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }
 
-  @Throttle({ default: { limit: 5, ttl: 15000 } })
+  @Throttle({ default: { limit: 5, ttl: 16000 } })
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
