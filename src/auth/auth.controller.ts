@@ -210,7 +210,7 @@ export class AuthController {
     await this.commandBus.execute(new ConfirmEmailCommand(code))
   }
 
-  @Throttle({ default: { limit: 5, ttl: 14000 } })
+  @Throttle({ default: { limit: 5, ttl: 15000 } })
   @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
