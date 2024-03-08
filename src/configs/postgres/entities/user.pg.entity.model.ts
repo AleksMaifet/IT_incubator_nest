@@ -1,9 +1,9 @@
-import { Column, Entity, Generated, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity('users')
 export class UserModelEntity {
-  @PrimaryGeneratedColumn()
-  _id: string
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column()
   login: string
@@ -19,11 +19,4 @@ export class UserModelEntity {
 
   @Column()
   createdAt: Date
-
-  @Column({
-    type: 'uuid',
-    unique: true,
-  })
-  @Generated('uuid')
-  id: string
 }
