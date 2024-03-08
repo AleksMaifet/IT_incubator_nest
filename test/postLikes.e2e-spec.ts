@@ -68,7 +68,7 @@ describe('Post likes', () => {
       const response = await makeAuthBasicRequest(
         httpServer,
         'post',
-        '/users',
+        '/sa/users',
         USER_DATA,
       ).expect(201)
 
@@ -184,7 +184,7 @@ describe('Post likes', () => {
         const password = `${USER_DATA.password + i}`
         const login = `${USER_DATA.login + i}`
 
-        await makeAuthBasicRequest(httpServer, 'post', '/users', {
+        await makeAuthBasicRequest(httpServer, 'post', '/sa/users', {
           login,
           password,
           email: `${i + USER_DATA.email}`,

@@ -21,7 +21,7 @@ import {
   GetAllUsersCommand,
 } from './useCases'
 
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
   constructor(private readonly commandBus: CommandBus) {}
 

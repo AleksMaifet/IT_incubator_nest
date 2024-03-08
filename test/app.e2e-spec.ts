@@ -72,7 +72,7 @@ describe('Application', () => {
       const response = await makeAuthBasicRequest(
         httpServer,
         'post',
-        '/users',
+        '/sa/users',
         USER_DATA,
       )
 
@@ -91,7 +91,7 @@ describe('Application', () => {
       const response = await makeAuthBasicRequest(
         httpServer,
         'get',
-        `/users?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        `/sa/users?pageNumber=${pageNumber}&pageSize=${pageSize}`,
       )
 
       expect(response.statusCode).toBe(200)
@@ -108,14 +108,14 @@ describe('Application', () => {
       const response = await makeAuthBasicRequest(
         httpServer,
         'post',
-        '/users',
+        '/sa/users',
         USER_DATA,
       )
 
       await makeAuthBasicRequest(
         httpServer,
         'delete',
-        `/users/${response.body.id}`,
+        `/sa/users/${response.body.id}`,
         USER_DATA,
       ).expect(204)
     })
@@ -124,7 +124,7 @@ describe('Application', () => {
       await makeAuthBasicRequest(
         httpServer,
         'delete',
-        `/users/${invalidId}`,
+        `/sa/users/${invalidId}`,
         USER_DATA,
       ).expect(404)
     })
@@ -139,7 +139,7 @@ describe('Application', () => {
       await makeAuthBasicRequest(
         httpServer,
         'post',
-        '/users',
+        '/sa/users',
         USER_DATA,
       ).expect(201)
     })
@@ -282,7 +282,7 @@ describe('Application', () => {
         const response = await makeAuthBasicRequest(
           httpServer,
           'post',
-          '/users',
+          '/sa/users',
           USER_DATA,
         )
 
@@ -428,7 +428,7 @@ describe('Application', () => {
       const response = await makeAuthBasicRequest(
         httpServer,
         'post',
-        '/users',
+        '/sa/users',
         USER_DATA,
       ).expect(201)
 
