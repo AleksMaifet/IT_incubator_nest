@@ -27,7 +27,7 @@ class RegistrationEmailResendingUseCase
 
     const { code } = newConfirmation
 
-    return await this.authService.sendEmailConfirmationCode({
+    return await this.authService.sendRegistrationEmailResendingCode({
       id,
       email,
       login,

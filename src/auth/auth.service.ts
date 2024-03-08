@@ -37,4 +37,28 @@ export class AuthService {
       return null
     }
   }
+
+  public async sendRegistrationEmailResendingCode(
+    user: Pick<IUser, 'id' | 'login' | 'email'> & { code: string },
+  ) {
+    const { id, login, email, code } = user
+
+    try {
+      const info =
+        await this.managerEmail.sendUserRegistrationEmailResendingCode({
+          login,
+          email,
+          code,
+        })
+
+      this.loggerService.log('Message sent ' + info.response)
+      return true
+    } catch (error) {
+      this.loggerService.error(`NodeMailer ${error}`)
+
+      await this.usersSqlRepository.deleteById(id)
+      await this.authSqlRepository.deleteConfirmationByCodeORUserId(id)
+      return null
+    }
+  }
 }
