@@ -1,12 +1,10 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
-  Param,
   Post,
   Put,
   Query,
@@ -19,19 +17,21 @@ import {
   CommentsService,
   GetCommentsRequestQuery,
 } from '../comments'
-import { PostsService } from './posts.service'
 import { GetPostsRequestQuery } from './interfaces'
-import { BasePostLikeDto, CreatePostDto, UpdatePostDto } from './dto'
-import { CreatePostCommand } from './useCases'
-import { User } from '../libs/decorators'
+import { BasePostLikeDto } from './dto'
+import {
+  GetAllPostsCommand,
+  GetPostByIdCommand,
+  UpdatePostLikeByIdCommand,
+} from './useCases'
+import { User, UUIDParam } from '../libs/decorators'
 import { HttpRequestHeaderUserInterceptor } from '../libs/interceptors'
 import { IJwtUser } from '../libs/interfaces'
-import { BasicAuthGuard, JwtAuthGuard } from '../libs/guards'
+import { JwtAuthGuard } from '../libs/guards'
 
 @Controller('posts')
 export class PostsController {
   constructor(
-    private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
     private readonly commandBus: CommandBus,
   ) {}
@@ -42,19 +42,23 @@ export class PostsController {
     @Query() query: GetPostsRequestQuery<string>,
     @User() user: IJwtUser,
   ) {
-    return await this.postsService.getAll({
-      userId: user?.userId,
-      query,
-    })
+    return await this.commandBus.execute(
+      new GetAllPostsCommand({
+        userId: user?.userId,
+        query,
+      }),
+    )
   }
 
   @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id')
-  private async getById(@Param('id') id: string, @User() user: IJwtUser) {
-    const result = await this.postsService.getById({
-      id,
-      userId: user?.userId,
-    })
+  private async getById(@UUIDParam('id') id: string, @User() user: IJwtUser) {
+    const result = await this.commandBus.execute(
+      new GetPostByIdCommand({
+        id,
+        userId: user?.userId,
+      }),
+    )
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
@@ -63,52 +67,56 @@ export class PostsController {
     return result
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  private async create(@Body() body: CreatePostDto) {
-    return await this.commandBus.execute(new CreatePostCommand(body))
-  }
+  // @UseGuards(BasicAuthGuard)
+  // @Post()
+  // private async create(@Body() body: CreatePostDto) {
+  //   return await this.commandBus.execute(new CreatePostCommand(body))
+  // }
 
-  @UseGuards(BasicAuthGuard)
-  @Put(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  private async updateById(
-    @Param('id') id: string,
-    @Body() body: UpdatePostDto,
-  ) {
-    const result = await this.postsService.updateById({ id, dto: body })
+  // @UseGuards(BasicAuthGuard)
+  // @Put(':id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // private async updateById(
+  //   @UUIDParam('id') id: string,
+  //   @Body() body: UpdatePostDto,
+  // ) {
+  //   const result = await this.commandBus.execute(
+  //     new UpdatePostByIdCommand({ id, dto: body }),
+  //   )
+  //
+  //   if (!result) {
+  //     throw new NotFoundException({ message: 'post is not exists' })
+  //   }
+  //
+  //   return result
+  // }
 
-    if (!result) {
-      throw new NotFoundException({ message: 'post is not exists' })
-    }
-
-    return result
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  private async deleteById(@Param('id') id: string) {
-    const result = await this.postsService.deleteById(id)
-
-    if (!result) {
-      throw new NotFoundException({ message: 'post is not exists' })
-    }
-
-    return result
-  }
+  // @UseGuards(BasicAuthGuard)
+  // @Delete(':id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // private async deleteById(@UUIDParam('id') id: string) {
+  //   const result = await this.commandBus.execute(new DeletePostByIdCommand(id))
+  //
+  //   if (!result) {
+  //     throw new NotFoundException({ message: 'post is not exists' })
+  //   }
+  //
+  //   return result
+  // }
 
   @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id/comments')
   private async getAllCommentById(
-    @Param('id') id: string,
+    @UUIDParam('id') id: string,
     @User() user: IJwtUser,
     @Query() query: GetCommentsRequestQuery<string>,
   ) {
-    const result = await this.postsService.getById({
-      id,
-      userId: user?.userId,
-    })
+    const result = await this.commandBus.execute(
+      new GetPostByIdCommand({
+        id,
+        userId: user?.userId,
+      }),
+    )
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
@@ -124,16 +132,18 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   private async createCommentById(
-    @Param('id') id: string,
+    @UUIDParam('id') id: string,
     @User() user: IJwtUser,
     @Body() body: BaseCommentDto,
   ) {
     const { userId, login } = user
 
-    const result = await this.postsService.getById({
-      id,
-      userId,
-    })
+    const result = await this.commandBus.execute(
+      new GetPostByIdCommand({
+        id,
+        userId: user?.userId,
+      }),
+    )
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
@@ -155,29 +165,33 @@ export class PostsController {
   @Put(':id/like-status')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updateLikeById(
-    @Param('id') id: string,
+    @UUIDParam('id') id: string,
     @User() user: IJwtUser,
     @Body() body: BasePostLikeDto,
   ) {
     const { likeStatus } = body
     const { userId, login } = user
 
-    const result = await this.postsService.getById({
-      id,
-      userId,
-    })
+    const result = await this.commandBus.execute(
+      new GetPostByIdCommand({
+        id,
+        userId: user?.userId,
+      }),
+    )
 
     if (!result) {
       throw new NotFoundException({ message: 'post is not exists' })
     }
 
-    await this.postsService.updateLikeById({
-      postId: id,
-      user: {
-        id: userId,
-        login,
-      },
-      likeStatus,
-    })
+    await this.commandBus.execute(
+      new UpdatePostLikeByIdCommand({
+        postId: id,
+        user: {
+          id: userId,
+          login,
+        },
+        likeStatus,
+      }),
+    )
   }
 }

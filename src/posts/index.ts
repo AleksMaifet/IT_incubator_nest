@@ -1,5 +1,5 @@
 export * from './posts.controller'
-export * from './posts.repository'
+export * from './repositories'
 export * from './posts.service'
 export * from './post.model'
 export * from './entities'

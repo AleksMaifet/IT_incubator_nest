@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { BasePostDto, Post, PostsRepository } from '../../posts'
-import { BlogsService } from '../blogs.service'
+import { BasePostDto, Post, PostsSqlRepository } from '../../posts'
+import { BlogsSqlRepository } from '../repositories'
 
 class CreatePostByBlogIdCommand {
   constructor(public readonly payload: { id: string; body: BasePostDto }) {}
@@ -11,15 +11,15 @@ class CreatePostByBlogIdUseCase
   implements ICommandHandler<CreatePostByBlogIdCommand>
 {
   constructor(
-    private readonly blogsService: BlogsService,
-    private readonly postsRepository: PostsRepository,
+    private readonly blogsSqlRepository: BlogsSqlRepository,
+    private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
 
   async execute(command: CreatePostByBlogIdCommand) {
     const { body, id } = command.payload
     const { title, shortDescription, content } = body
 
-    const blog = await this.blogsService.getById(id)
+    const blog = await this.blogsSqlRepository.getById(id)
 
     const newPost = new Post(
       title,
@@ -29,7 +29,7 @@ class CreatePostByBlogIdUseCase
       blog.name,
     )
 
-    return await this.postsRepository.create(newPost)
+    return await this.postsSqlRepository.create(newPost)
   }
 }
 

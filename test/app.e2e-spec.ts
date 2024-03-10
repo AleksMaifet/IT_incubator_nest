@@ -514,234 +514,251 @@ describe('Application', () => {
     })
   })
 
-  // describe('Blogs', () => {
-  //   const errorId = '00000000000000'
-  //
-  //   beforeAll(async () => {
-  //     await request(httpServer).delete('/testing/all-data').expect(204)
-  //   })
-  //
-  //   it('GET blog by id with error', async () => {
-  //     await request(httpServer)
-  //       .get('/blogs' + `/${errorId}`)
-  //       .expect(404)
-  //   })
-  //
-  //   it('GET blogs by id success', async () => {
-  //     const res = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     await request(httpServer)
-  //       .get('/blogs' + `/${res.body.id}`)
-  //       .expect(200)
-  //   })
-  //
-  //   it('POST/PUT/DELETE  blog with Unauthorized error', async () => {
-  //     await request(httpServer).post('/blogs').expect(401)
-  //
-  //     await request(httpServer)
-  //       .delete('/blogs' + `/${errorId}`)
-  //       .expect(401)
-  //
-  //     await request(httpServer)
-  //       .put('/blogs' + `/${errorId}`)
-  //       .expect(401)
-  //   })
-  //
-  //   it('POST not created blog with error', async () => {
-  //     await makeAuthBasicRequest(httpServer, 'post', '/blogs').expect(400)
-  //   })
-  //
-  //   it('POST created blog success', async () => {
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     ).expect(201)
-  //   })
-  //
-  //   it('PUT update blog by id success', async () => {
-  //     const res = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'put',
-  //       '/blogs' + `/${res.body.id}`,
-  //       BLOG_DATA,
-  //     ).expect(204)
-  //   })
-  //
-  //   it('PUT not update blog by id with error', async () => {
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'put',
-  //       '/blogs' + `/${errorId}`,
-  //       BLOG_DATA,
-  //     ).expect(404)
-  //   })
-  //
-  //   it('DELETE delete blog by id success', async () => {
-  //     const res = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'delete',
-  //       '/blogs' + `/${res.body.id}`,
-  //     ).expect(204)
-  //   })
-  //
-  //   it('DELETE not delete blog by id with error', async () => {
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'delete',
-  //       '/blogs' + `/${errorId}`,
-  //     ).expect(404)
-  //   })
-  // })
-  //
-  // describe('Posts', () => {
-  //   const errorId = '00000000000000'
-  //
-  //   beforeAll(async () => {
-  //     await request(httpServer).delete('/testing/all-data').expect(204)
-  //   })
-  //
-  //   it('GET posts by id with error', async () => {
-  //     await request(httpServer)
-  //       .get('/posts' + `/${errorId}`)
-  //       .expect(404)
-  //   })
-  //
-  //   it('GET posts by id success', async () => {
-  //     const resBlog = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     const resPost = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-  //       ...POST_DATA,
-  //       blogId: resBlog.body.id,
-  //     })
-  //
-  //     await request(httpServer)
-  //       .get('/posts' + `/${resPost.body.id}`)
-  //       .expect(200)
-  //   })
-  //
-  //   it('POST/PUT/DELETE  post with Unauthorized error', async () => {
-  //     await request(httpServer).post('/posts').expect(401)
-  //
-  //     await request(httpServer)
-  //       .delete('/posts' + `/${errorId}`)
-  //       .expect(401)
-  //
-  //     await request(httpServer)
-  //       .put('/posts' + `/${errorId}`)
-  //       .expect(401)
-  //   })
-  //
-  //   it('POST not created post with error', async () => {
-  //     await makeAuthBasicRequest(httpServer, 'post', '/posts').expect(400)
-  //   })
-  //
-  //   it('POST created post success', async () => {
-  //     const resBlog = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-  //       ...POST_DATA,
-  //       blogId: resBlog.body.id,
-  //     }).expect(201)
-  //   })
-  //
-  //   it('PUT update post by id success', async () => {
-  //     const resBlog = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     const res = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-  //       ...POST_DATA,
-  //       blogId: resBlog.body.id,
-  //     })
-  //
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'put',
-  //       '/posts' + `/${res.body.id}`,
-  //       {
-  //         ...POST_DATA,
-  //         blogId: resBlog.body.id,
-  //       },
-  //     ).expect(204)
-  //   })
-  //
-  //   it('PUT not update post by id with error', async () => {
-  //     const resBlog = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     await makeAuthBasicRequest(httpServer, 'put', '/posts' + `/${errorId}`, {
-  //       ...POST_DATA,
-  //       blogId: resBlog.body.id,
-  //     }).expect(404)
-  //   })
-  //
-  //   it('DELETE delete post by id success', async () => {
-  //     const resBlog = await makeAuthBasicRequest(
-  //       httpServer,
-  //       'post',
-  //       '/blogs',
-  //       BLOG_DATA,
-  //     )
-  //
-  //     const resPost = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-  //       ...POST_DATA,
-  //       blogId: resBlog.body.id,
-  //     })
-  //
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'delete',
-  //       '/posts' + `/${resPost.body.id}`,
-  //     ).expect(204)
-  //   })
-  //
-  //   it('DELETE not delete video by id with error', async () => {
-  //     await makeAuthBasicRequest(
-  //       httpServer,
-  //       'delete',
-  //       '/posts' + `/${errorId}`,
-  //     ).expect(404)
-  //   })
-  // })
-  //
+  describe('Blogs', () => {
+    const errorId = '00000000000000'
+
+    beforeAll(async () => {
+      await request(httpServer).delete('/testing/all-data').expect(204)
+    })
+
+    it('GET blog by id with error', async () => {
+      await request(httpServer)
+        .get('/blogs' + `/${errorId}`)
+        .expect(404)
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'get',
+        '/sa/blogs' + `/${errorId}`,
+      ).expect(404)
+    })
+
+    it('GET blogs by id success', async () => {
+      const res = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      )
+
+      await request(httpServer)
+        .get('/blogs' + `/${res.body.id}`)
+        .expect(200)
+    })
+
+    it('POST/PUT/DELETE  blog with Unauthorized error', async () => {
+      await request(httpServer).post('/sa/blogs').expect(401)
+
+      await request(httpServer)
+        .delete('/sa/blogs' + `/${errorId}`)
+        .expect(401)
+
+      await request(httpServer)
+        .put('/sa/blogs' + `/${errorId}`)
+        .expect(401)
+    })
+
+    it('POST not created blog with error', async () => {
+      await makeAuthBasicRequest(httpServer, 'post', '/sa/blogs').expect(400)
+    })
+
+    it('POST created blog success', async () => {
+      await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      ).expect(201)
+    })
+
+    it('PUT update blog by id success', async () => {
+      const res = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      )
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'put',
+        '/sa/blogs' + `/${res.body.id}`,
+        BLOG_DATA,
+      ).expect(204)
+    })
+
+    it('PUT not update blog by id with error', async () => {
+      await makeAuthBasicRequest(
+        httpServer,
+        'put',
+        '/sa/blogs' + `/${errorId}`,
+        BLOG_DATA,
+      ).expect(404)
+    })
+
+    it('DELETE delete blog by id success', async () => {
+      const res = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      )
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'delete',
+        '/sa/blogs' + `/${res.body.id}`,
+      ).expect(204)
+    })
+
+    it('DELETE not delete blog by id with error', async () => {
+      await makeAuthBasicRequest(
+        httpServer,
+        'delete',
+        '/sa/blogs' + `/${errorId}`,
+      ).expect(404)
+    })
+  })
+
+  describe('Posts', () => {
+    const errorId = '00000000000000'
+
+    beforeAll(async () => {
+      await request(httpServer).delete('/testing/all-data').expect(204)
+    })
+
+    it('GET posts by id with error', async () => {
+      await request(httpServer)
+        .get('/posts' + `/${errorId}`)
+        .expect(404)
+    })
+
+    it('GET posts by id success', async () => {
+      const resBlog = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      ).expect(201)
+
+      const resPost = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        `/sa/blogs/${resBlog.body.id}/posts`,
+        POST_DATA,
+      ).expect(201)
+
+      await request(httpServer)
+        .get('/posts' + `/${resPost.body.id}`)
+        .expect(200)
+    })
+
+    it('POST/PUT/DELETE  post with Unauthorized error', async () => {
+      await request(httpServer).post(`/sa/blogs/${errorId}/posts`).expect(401)
+
+      await request(httpServer)
+        .put(`/sa/blogs/${errorId}/posts/${errorId}`)
+        .expect(401)
+
+      await request(httpServer)
+        .delete(`/sa/blogs/${errorId}/posts/${errorId}`)
+        .expect(401)
+    })
+
+    it('POST not created post with error', async () => {
+      const resBlog = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      ).expect(201)
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        `/sa/blogs/${resBlog.body.id}/posts`,
+      ).expect(400)
+    })
+
+    it('POST created post success', async () => {
+      const resBlog = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      ).expect(201)
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        `/sa/blogs/${resBlog.body.id}/posts`,
+        POST_DATA,
+      ).expect(201)
+    })
+
+    it('PUT update post by id success', async () => {
+      const resBlog = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      ).expect(201)
+
+      const resPost = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        `/sa/blogs/${resBlog.body.id}/posts`,
+        POST_DATA,
+      ).expect(201)
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'put',
+        `/sa/blogs/${resBlog.body.id}/posts/${resPost.body.id}`,
+        POST_DATA,
+      ).expect(204)
+    })
+
+    it('PUT not update post by id with error', async () => {
+      await makeAuthBasicRequest(
+        httpServer,
+        'put',
+        `/sa/blogs/${errorId}/posts`,
+        POST_DATA,
+      ).expect(404)
+    })
+
+    it('DELETE delete post by id success', async () => {
+      const resBlog = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/blogs',
+        BLOG_DATA,
+      ).expect(201)
+
+      const resPost = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        `/sa/blogs/${resBlog.body.id}/posts`,
+        POST_DATA,
+      ).expect(201)
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'delete',
+        `/sa/blogs/${resBlog.body.id}/posts/${resPost.body.id}`,
+      ).expect(204)
+    })
+
+    it('DELETE not delete post by id with error', async () => {
+      await makeAuthBasicRequest(
+        httpServer,
+        'delete',
+        `/sa/blogs/${errorId}/posts/${errorId}`,
+      ).expect(404)
+    })
+  })
+
   // describe('Comments', () => {
   //   let jwt_token: string
   //   let postId: string

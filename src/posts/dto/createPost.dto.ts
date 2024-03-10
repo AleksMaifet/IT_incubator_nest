@@ -6,18 +6,21 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import { BlogsRepository } from '../../blogs'
+import { validate } from 'uuid'
+import { BlogsSqlRepository } from '../../blogs'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomPostValidationByBlogId implements ValidatorConstraintInterface {
   constructor(
-    @Inject(forwardRef(() => BlogsRepository))
-    private readonly blogsRepository: BlogsRepository,
+    @Inject(forwardRef(() => BlogsSqlRepository))
+    private readonly blogsSqlRepository: BlogsSqlRepository,
   ) {}
 
   async validate(id: string) {
-    const blog = await this.blogsRepository.getById(id)
+    if (!validate(id)) return false
+
+    const blog = await this.blogsSqlRepository.getById(id)
 
     return !!blog
   }

@@ -1,6 +1,8 @@
 import { ConfigService } from '@nestjs/config'
 import {
+  BlogPgEntity,
   ConfirmationModelPgEntity,
+  PostPgEntity,
   RefreshTokenMetaPgEntity,
   UserModelEntity,
 } from './entities'
@@ -20,6 +22,8 @@ class PostgresService {
         UserModelEntity,
         ConfirmationModelPgEntity,
         RefreshTokenMetaPgEntity,
+        BlogPgEntity,
+        PostPgEntity,
       ],
       synchronize: true,
     }

@@ -1,11 +1,11 @@
 import { CreateUserDto } from '../src/users'
-import { CreatePostDto } from '../src/posts'
+import { BasePostDto } from '../src/posts'
 import { BaseCommentDto } from '../src/comments'
 import { BaseBlogDto } from '../src/blogs'
 
 interface IDefaultTestData {
   USER_DATA: CreateUserDto
-  POST_DATA: CreatePostDto
+  POST_DATA: BasePostDto
   BLOG_DATA: BaseBlogDto
   COMMENT_DATA: BaseCommentDto
 }
@@ -20,7 +20,6 @@ const DEFAULT_TEST_DATA: IDefaultTestData = {
     title: 'string',
     content: 'string',
     shortDescription: 'string',
-    blogId: 'string',
   },
   BLOG_DATA: {
     name: 'string',

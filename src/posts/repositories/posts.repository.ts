@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { BasePostLikeDto, CreatePostDto, UpdatePostDto } from './dto'
-import { PostModel } from './post.model'
+import { BasePostLikeDto, CreatePostDto, UpdatePostDto } from '../dto'
+import { PostModel } from '../post.model'
 import {
   GetPostsRequestQuery,
   IPostsResponse,
   IUserPostLike,
   LIKE_POST_USER_STATUS_ENUM,
-} from './interfaces'
-import { DEFAULTS_POST_LIKE_STATUS } from './constants'
+} from '../interfaces'
+import { DEFAULTS_POST_LIKE_STATUS } from '../constants'
 
 const { LIKES_COUNT, DISLIKES_COUNT, MAX_NEWEST_LIKES_COUNT } =
   DEFAULTS_POST_LIKE_STATUS

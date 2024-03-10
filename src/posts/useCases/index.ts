@@ -1,1 +1,6 @@
 export * from './createPost.useCase'
+export * from './getAllPosts.useCase'
+export * from './getPostById.useCase'
+export * from './updatePostById.useCase'
+export * from './deletePostById.useCase'
+export * from './updatePostLikeById.useCase'

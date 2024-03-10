@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { forwardRef, Inject } from '@nestjs/common'
-import { CreatePostDto, Post, PostsRepository } from '../../posts'
-import { BlogsService } from '../../blogs'
+import { CreatePostDto, Post, PostsSqlRepository } from '../../posts'
+import { BlogsSqlRepository } from '../../blogs'
 
 class CreatePostCommand {
   constructor(public readonly payload: CreatePostDto) {}
@@ -10,20 +10,20 @@ class CreatePostCommand {
 @CommandHandler(CreatePostCommand)
 class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   constructor(
-    @Inject(forwardRef(() => BlogsService))
-    private readonly blogsService: BlogsService,
-    @Inject(forwardRef(() => PostsRepository))
-    private readonly postsRepository: PostsRepository,
+    @Inject(forwardRef(() => BlogsSqlRepository))
+    private readonly blogsSqlRepository: BlogsSqlRepository,
+    @Inject(forwardRef(() => PostsSqlRepository))
+    private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
 
   async execute(command: CreatePostCommand) {
     const { title, shortDescription, content, blogId } = command.payload
 
-    const { id, name } = await this.blogsService.getById(blogId)
+    const { id, name } = await this.blogsSqlRepository.getById(blogId)
 
     const newPost = new Post(title, shortDescription, content, id, name)
 
-    return await this.postsRepository.create(newPost)
+    return await this.postsSqlRepository.create(newPost)
   }
 }
 

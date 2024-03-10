@@ -1,34 +1,37 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { PostsService, PostsSqlRepository } from '../../posts'
-import { GetBlogsRequestQuery } from '../interfaces'
+import { forwardRef, Inject } from '@nestjs/common'
+import {
+  GetPostsRequestQuery,
+  PostsService,
+  PostsSqlRepository,
+} from '../../posts'
 import { LikesService } from '../../likes'
 
-class GetPostsByBlogIdCommand {
+class GetAllPostsCommand {
   constructor(
     public readonly payload: {
-      id: string
       userId: string
-      query: Omit<GetBlogsRequestQuery<string>, 'searchNameTerm'>
+      query: GetPostsRequestQuery<string>
     },
   ) {}
 }
 
-@CommandHandler(GetPostsByBlogIdCommand)
-class GetPostsByBlogIdUseCase
-  implements ICommandHandler<GetPostsByBlogIdCommand>
-{
+@CommandHandler(GetAllPostsCommand)
+class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
   constructor(
+    @Inject(forwardRef(() => PostsService))
     private readonly postsService: PostsService,
     private readonly likesService: LikesService,
+    @Inject(forwardRef(() => PostsSqlRepository))
     private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
 
-  async execute(command: GetPostsByBlogIdCommand) {
-    const { query, id, userId } = command.payload
+  async execute(command: GetAllPostsCommand) {
+    const { query, userId } = command.payload
 
     const dto = this.postsService.mapQueryParamsToDB(query)
 
-    const posts = await this.postsSqlRepository.getPostsByBlogId(id, dto)
+    const posts = await this.postsSqlRepository.getAll(dto)
 
     if (!userId) {
       return posts
@@ -46,4 +49,4 @@ class GetPostsByBlogIdUseCase
   }
 }
 
-export { GetPostsByBlogIdUseCase, GetPostsByBlogIdCommand }
+export { GetAllPostsUseCase, GetAllPostsCommand }

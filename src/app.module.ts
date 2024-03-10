@@ -15,30 +15,56 @@ import {
   PostsController,
   PostsRepository,
   PostsService,
+  PostsSqlRepository,
 } from './posts'
 import {
   BlogModel,
   BlogSchema,
   BlogsController,
   BlogsRepository,
-  BlogsService,
+  BlogsSqlRepository,
+  BlogsSupeAdminController,
+  CustomBlogValidationParamById,
+  CustomPostValidationParamById,
 } from './blogs'
 import { CommentsModule } from './comments'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users'
 import { AccessTokenStrategy, BasicStrategy } from './libs/strategies'
 import {
+  CreateBlogUseCase,
   CreatePostByBlogIdUseCase,
+  DeleteBlogByIdUseCase,
+  GetAllBlogsUseCase,
+  GetBlogByIdUseCase,
   GetPostsByBlogIdUseCase,
+  UpdateBlogByIdUseCase,
 } from './blogs/useCases'
-import { CreatePostUseCase } from './posts/useCases'
+import {
+  CreatePostUseCase,
+  DeletePostByIdUseCase,
+  GetAllPostsUseCase,
+  GetPostByIdUseCase,
+  UpdatePostByIdUseCase,
+  UpdatePostLikeByIdUseCase,
+} from './posts/useCases'
 import { LikesModule } from './likes'
 import { SecurityDevicesModule } from './security-devices/security-devices.module'
 
 const useCases = [
   GetPostsByBlogIdUseCase,
   CreatePostByBlogIdUseCase,
+  CreateBlogUseCase,
+  GetAllBlogsUseCase,
+  GetBlogByIdUseCase,
+  UpdateBlogByIdUseCase,
+  DeleteBlogByIdUseCase,
   CreatePostUseCase,
+  GetAllPostsUseCase,
+  GetPostByIdUseCase,
+  UpdatePostByIdUseCase,
+  DeletePostByIdUseCase,
+  UpdatePostLikeByIdUseCase,
 ]
 
 @Module({
@@ -64,14 +90,17 @@ const useCases = [
     LikesModule,
     SecurityDevicesModule,
   ],
-  controllers: [BlogsController, PostsController],
+  controllers: [BlogsController, BlogsSupeAdminController, PostsController],
   providers: [
     AccessTokenStrategy,
     BasicStrategy,
-    BlogsService,
     BlogsRepository,
+    BlogsSqlRepository,
     PostsService,
     PostsRepository,
+    PostsSqlRepository,
+    CustomBlogValidationParamById,
+    CustomPostValidationParamById,
     CustomPostValidationByBlogId,
     Logger,
     JwtService,
