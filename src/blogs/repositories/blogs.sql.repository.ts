@@ -14,9 +14,9 @@ class BlogsSqlRepository {
     const totalCountRequest = await this.dataSource.query(
       `
       SELECT count(*) FROM blogs
-      WHERE LOWER(name) = LOWER($1)
+      WHERE LOWER(name) LIKE LOWER($1)
     `,
-      [searchNameTerm],
+      [`%${searchNameTerm}%`],
     )
 
     const { response } = this._createdFindOptionsAndResponse({
@@ -28,13 +28,18 @@ class BlogsSqlRepository {
     // TODO think about sql injections
     const query = `
     SELECT * FROM blogs
-    WHERE LOWER(name) = LOWER($1)
-    ORDER BY "${sortBy}" ${sortDirection}
+    WHERE LOWER(name) LIKE LOWER($1)
+    ORDER BY 
+        CASE 
+            WHEN ASCII(name) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
+            ELSE 2
+        END,
+            "${sortBy}" ${sortDirection}
     LIMIT $2 OFFSET $3;
     `
 
     response.items = await this.dataSource.query(query, [
-      searchNameTerm,
+      `%${searchNameTerm}%`,
       pageSize,
       (pageNumber - 1) * pageSize,
     ])

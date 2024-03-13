@@ -15,9 +15,9 @@ class UsersSqlRepository {
     const totalCountRequest = await this.dataSource.query(
       `
       SELECT count(*) FROM users
-      WHERE LOWER(email) = LOWER($1) OR LOWER(login) = LOWER($2)
+      WHERE LOWER(email) LIKE LOWER($1) OR LOWER(login) LIKE LOWER($2)
     `,
-      [searchEmailTerm, searchLoginTerm],
+      [`%${searchEmailTerm}%`, `%${searchLoginTerm}%`],
     )
 
     const { response } = this._createdFindOptionsAndResponse({
@@ -27,14 +27,19 @@ class UsersSqlRepository {
 
     const query = `
     SELECT id, login, email, "createdAt" FROM users
-    WHERE LOWER(email) = LOWER($1) OR LOWER(login) = LOWER($2)
-    ORDER BY "${dto.sortBy}" ${dto.sortDirection}
+    WHERE LOWER(email) LIKE LOWER($1) OR LOWER(login) LIKE LOWER($2)
+    ORDER BY 
+        CASE 
+            WHEN ASCII(email) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
+            ELSE 2
+        END,
+            "${dto.sortBy}" ${dto.sortDirection}
     LIMIT $3 OFFSET $4;
     `
 
     response.items = await this.dataSource.query(query, [
-      searchEmailTerm,
-      searchLoginTerm,
+      `%${searchEmailTerm}%`,
+      `%${searchLoginTerm}%`,
       dto.pageSize,
       (dto.pageNumber - 1) * dto.pageSize,
     ])
@@ -80,13 +85,18 @@ class UsersSqlRepository {
     // TODO think about sql injections
     const query = `
       SELECT id, login, email, "createdAt" from users
-      WHERE LOWER(email) = LOWER($1)
-      ORDER BY "${dto.sortBy}" ${dto.sortDirection}
+      WHERE LOWER(email) LIKE LOWER($1)
+      ORDER BY 
+        CASE 
+            WHEN ASCII(email) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
+            ELSE 2
+        END,
+            "${dto.sortBy}" ${dto.sortDirection}
       LIMIT $2 OFFSET $3;
     `
 
     const getUserByEmail = await this.dataSource.query(query, [
-      searchEmailTerm,
+      `%${searchEmailTerm}%`,
       dto.pageSize,
       (dto.pageNumber - 1) * dto.pageSize,
     ])
@@ -109,13 +119,18 @@ class UsersSqlRepository {
     // TODO think about sql injections
     const query = `
       SELECT id, login, email, "createdAt" from users
-      WHERE LOWER(login) = LOWER($1)
-      ORDER BY "${dto.sortBy}" ${dto.sortDirection}
+      WHERE LOWER(login) LIKE LOWER($1)
+      ORDER BY 
+        CASE 
+            WHEN ASCII(login) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
+            ELSE 2
+        END,
+            "${dto.sortBy}" ${dto.sortDirection}
       LIMIT $2 OFFSET $3;
     `
 
     const getUserByEmail = await this.dataSource.query(query, [
-      searchLoginTerm,
+      `%${searchLoginTerm}%`,
       dto.pageSize,
       (dto.pageNumber - 1) * dto.pageSize,
     ])
