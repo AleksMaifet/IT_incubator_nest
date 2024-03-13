@@ -127,12 +127,14 @@ class BlogsSqlRepository {
       RETURNING *
     `
 
-    return await this.dataSource.query(query, [
+    const result = await this.dataSource.query(query, [
       id,
       name,
       description,
       websiteUrl,
     ])
+
+    return result[1]
   }
 
   public async create(dto: IBlog) {
