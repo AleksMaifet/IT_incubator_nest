@@ -28,12 +28,7 @@ class UsersSqlRepository {
     const query = `
     SELECT id, login, email, "createdAt" FROM users
     WHERE LOWER(email) LIKE LOWER($1) OR LOWER(login) LIKE LOWER($2)
-    ORDER BY 
-        CASE 
-            WHEN ASCII(email) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
-            ELSE 2
-        END,
-            "${dto.sortBy}" ${dto.sortDirection}
+    ORDER BY "${dto.sortBy}" COLLATE "C" ${dto.sortDirection}
     LIMIT $3 OFFSET $4;
     `
 
