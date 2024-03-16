@@ -2,7 +2,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { Module } from '@nestjs/common'
 import { LikesService } from './likes.service'
 import { LikeModel, LikeSchema } from './like.model'
-import { LikesRepository } from './likes.repository'
+import { LikesRepository } from './repositories/likes.repository'
 
 @Module({
   imports: [
@@ -14,6 +14,6 @@ import { LikesRepository } from './likes.repository'
     ]),
   ],
   providers: [LikesService, LikesRepository],
-  exports: [LikesService],
+  exports: [LikesService, LikesRepository],
 })
 export class LikesModule {}

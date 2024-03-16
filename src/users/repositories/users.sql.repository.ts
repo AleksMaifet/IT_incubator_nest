@@ -217,10 +217,14 @@ class UsersSqlRepository {
       UPDATE users
       SET "passwordHash" = $2, "passwordSalt" = $3
       WHERE id = $1
-      RETURNING *
     `
+    const result = await this.dataSource.query(query, [
+      id,
+      passwordHash,
+      passwordSalt,
+    ])
 
-    return await this.dataSource.query(query, [id, passwordHash, passwordSalt])
+    return result[1]
   }
 
   public async getByLoginOrEmail(loginOrEmail: string) {

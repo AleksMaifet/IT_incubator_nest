@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { GetPostsRequestQuery, IPost, IPostsResponse } from '../interfaces'
+import {
+  GetPostsRequestQuery,
+  IPost,
+  IPostsResponse,
+  IUserPostLike,
+  LIKE_POST_USER_STATUS_ENUM,
+} from '../interfaces'
 import { UpdatePostDto } from '../dto'
 
 @Injectable()
@@ -126,12 +132,12 @@ class PostsSqlRepository {
       content,
       blogName,
       createdAt,
-      extendedLikesInfo,
+      extendedLikesInfo: { likesCount, dislikesCount, myStatus },
     } = dto
 
     const query = `
-    INSERT INTO posts ("blogId", title, "shortDescription", content, "blogName", "createdAt", "extendedLikesInfo")
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO posts ("blogId", title, "shortDescription", content, "blogName", "createdAt", "likesCount", "dislikesCount")
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *
     `
 
@@ -142,10 +148,19 @@ class PostsSqlRepository {
       content,
       blogName,
       createdAt,
-      JSON.stringify(extendedLikesInfo),
+      likesCount,
+      dislikesCount,
     ])
 
-    return result[0]
+    return result.map(({ likesCount, dislikesCount, ...rest }) => ({
+      ...rest,
+      extendedLikesInfo: {
+        likesCount,
+        dislikesCount,
+        myStatus,
+        newestLikes: [],
+      },
+    }))[0]
   }
 
   public async deleteById(id: string) {

@@ -1,5 +1,4 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { IUserPostLike, LIKE_POST_USER_STATUS_ENUM } from '../../../posts'
 
 @Entity('posts')
 export class PostPgEntity {
@@ -24,11 +23,9 @@ export class PostPgEntity {
   @Column()
   createdAt: Date
 
-  @Column({ type: 'jsonb' })
-  extendedLikesInfo: {
-    likesCount: number
-    dislikesCount: number
-    myStatus: LIKE_POST_USER_STATUS_ENUM
-    newestLikes: IUserPostLike[]
-  }
+  @Column()
+  likesCount: number
+
+  @Column()
+  dislikesCount: number
 }

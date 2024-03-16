@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { LikesRepository } from './likes.repository'
+import { LikesRepository } from './repositories/likes.repository'
 import { BaseCommentLikeDto } from '../comments'
 import { BasePostLikeDto } from '../posts'
 import { Likes } from './like.entity'

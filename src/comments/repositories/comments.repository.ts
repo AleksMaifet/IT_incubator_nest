@@ -1,15 +1,15 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
-import { CommentModel } from './comment.model'
+import { CommentModel } from '../comment.model'
 import {
   GetCommentsRequestQuery,
   IComments,
   ICommentsResponse,
   LIKE_COMMENT_USER_STATUS_ENUM,
-} from './interfaces'
-import { BaseCommentLikeDto } from './dto'
-import { DEFAULTS_COMMENT_LIKE_STATUS } from './constants'
+} from '../interfaces'
+import { BaseCommentLikeDto } from '../dto'
+import { DEFAULTS_COMMENT_LIKE_STATUS } from '../constants'
 
 const { LIKES_COUNT, DISLIKES_COUNT } = DEFAULTS_COMMENT_LIKE_STATUS
 

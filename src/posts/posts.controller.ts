@@ -15,6 +15,8 @@ import { CommandBus } from '@nestjs/cqrs'
 import {
   BaseCommentDto,
   CommentsService,
+  CreateCommentByPostIdCommand,
+  GetAllCommentsByPostIdCommand,
   GetCommentsRequestQuery,
 } from '../comments'
 import { GetPostsRequestQuery } from './interfaces'
@@ -122,11 +124,13 @@ export class PostsController {
       throw new NotFoundException({ message: 'post is not exists' })
     }
 
-    return await this.commentsService.getAllByPostId({
-      postId: id,
-      userId: user?.userId,
-      query,
-    })
+    return await this.commandBus.execute(
+      new GetAllCommentsByPostIdCommand({
+        postId: id,
+        userId: user?.userId,
+        query,
+      }),
+    )
   }
 
   @UseGuards(JwtAuthGuard)
@@ -151,14 +155,16 @@ export class PostsController {
 
     const { content } = body
 
-    return await this.commentsService.create({
-      postId: id,
-      content,
-      commentatorInfo: {
-        userId,
-        userLogin: login,
-      },
-    })
+    return await this.commandBus.execute(
+      new CreateCommentByPostIdCommand({
+        postId: id,
+        content,
+        commentatorInfo: {
+          userId,
+          userLogin: login,
+        },
+      }),
+    )
   }
 
   @UseGuards(JwtAuthGuard)

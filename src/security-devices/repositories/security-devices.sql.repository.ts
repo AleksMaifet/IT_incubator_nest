@@ -24,8 +24,6 @@ class SecurityDevicesSqlRepository {
        WHERE 
         "userId" = $1 AND
         "deviceId" = $2
-       RETURNING 
-        *
        `
 
     const result = await this.dataSource.query(query, [

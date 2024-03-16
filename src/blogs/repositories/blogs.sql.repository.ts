@@ -129,7 +129,6 @@ class BlogsSqlRepository {
       UPDATE blogs
       SET name = $2, description = $3, "websiteUrl" = $4
       WHERE id = $1
-      RETURNING *
     `
 
     const result = await this.dataSource.query(query, [
