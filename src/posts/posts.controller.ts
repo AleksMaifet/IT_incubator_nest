@@ -14,7 +14,6 @@ import {
 import { CommandBus } from '@nestjs/cqrs'
 import {
   BaseCommentDto,
-  CommentsService,
   CreateCommentByPostIdCommand,
   GetAllCommentsByPostIdCommand,
   GetCommentsRequestQuery,
@@ -33,10 +32,7 @@ import { JwtAuthGuard } from '../libs/guards'
 
 @Controller('posts')
 export class PostsController {
-  constructor(
-    private readonly commentsService: CommentsService,
-    private readonly commandBus: CommandBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get()

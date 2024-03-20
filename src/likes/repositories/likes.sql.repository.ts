@@ -1,95 +1,131 @@
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-import { ILikes } from '../interfaces'
-import { BaseCommentLikeDto } from '../../comments'
 import { BasePostLikeDto } from '../../posts'
+import { CommentInfoLikeType, PostInfoLikeType } from '../interfaces'
+import { BaseCommentLikeDto } from '../../comments'
 
 class LikesSqlRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  // public async create(dto: ILikes) {
-  //   const {
-  //     likerInfo: { userId },
-  //   } = dto
-  //
-  //   const result = await this.likeModel.findOne({ 'likerInfo.userId': userId })
-  //
-  //   if (!result) {
-  //     return await this.likeModel.create(dto)
-  //   }
-  //
-  //   return result
-  // }
-  //
-  // public async getUserLikesByUserId(userId: string) {
-  //   return await this.likeModel
-  //     .findOne({
-  //       'likerInfo.userId': userId,
-  //     })
-  //     .exec()
-  // }
-  //
-  // public async updateUserCommentLikes(
-  //   dto: { commentId: string; userId: string } & BaseCommentLikeDto,
-  // ) {
-  //   const { commentId, userId, likeStatus } = dto
-  //
-  //   const like = await this.likeModel.findOne({
-  //     'likerInfo.userId': userId,
-  //   })
-  //
-  //   if (!like) return null
-  //
-  //   const { likeStatusComments } = like
-  //
-  //   const index = likeStatusComments.findIndex(
-  //     (info) => info.commentId === commentId,
-  //   )
-  //
-  //   if (index !== -1) {
-  //     likeStatusComments.splice(index, 1)
-  //   }
-  //
-  //   likeStatusComments.push({
-  //     status: likeStatus,
-  //     commentId,
-  //     addedAt: new Date(),
-  //   })
-  //
-  //   like.markModified('likeStatusComments')
-  //
-  //   return await like.save()
-  // }
-  //
-  // public async updateUserPostLikes(
-  //   dto: { postId: string; userId: string } & BasePostLikeDto,
-  // ) {
-  //   const { postId, userId, likeStatus } = dto
-  //
-  //   const like = await this.likeModel.findOne({
-  //     'likerInfo.userId': userId,
-  //   })
-  //
-  //   if (!like) return null
-  //
-  //   const { likeStatusPosts } = like
-  //
-  //   const index = likeStatusPosts.findIndex((info) => info.postId === postId)
-  //
-  //   if (index !== -1) {
-  //     likeStatusPosts.splice(index, 1)
-  //   }
-  //
-  //   likeStatusPosts.push({
-  //     status: likeStatus,
-  //     postId,
-  //     addedAt: new Date(),
-  //   })
-  //
-  //   like.markModified('likeStatusPosts')
-  //
-  //   return await like.save()
-  // }
+  public async createPostLike(
+    dto: {
+      userId: string
+      userLogin: string
+    } & Pick<PostInfoLikeType, 'postId'>,
+  ) {
+    const { userId, userLogin, postId } = dto
+
+    const result = await this.dataSource.query(
+      `
+      WITH checked AS (
+        SELECT * FROM "postLike"
+        WHERE "userId" = $1 AND "postId" = $3 AND "addedAt" IS NOT NULL
+    ),
+     inserted AS (
+        INSERT INTO "postLike" ("userId", "userLogin", "postId")
+        VALUES ($1, $2, $3)
+        RETURNING *
+    )
+    SELECT * FROM checked
+    UNION ALL
+    SELECT * FROM inserted
+    `,
+      [userId, userLogin, postId],
+    )
+
+    return result.map(({ status, postId, addedAt }) => ({
+      status,
+      postId,
+      addedAt,
+    }))
+  }
+
+  public async getPostLikesByUserId(userId: string) {
+    return await this.dataSource.query(
+      `
+      SELECT * FROM "postLike"
+      WHERE "userId" = $1
+    `,
+      [userId],
+    )
+  }
+
+  public async updateUserPostLikes(
+    dto: { postId: string; userId: string; addedAt: Date } & BasePostLikeDto,
+  ) {
+    const { postId, userId, likeStatus, addedAt } = dto
+
+    const result = await this.dataSource.query(
+      `
+     UPDATE "postLike"
+     SET "status" = $3, "addedAt" = $4
+     WHERE "userId" = $1 AND "postId" = $2
+     `,
+      [userId, postId, likeStatus, addedAt],
+    )
+
+    return result[1]
+  }
+
+  public async createCommentLike(
+    dto: {
+      userId: string
+      userLogin: string
+    } & Pick<CommentInfoLikeType, 'commentId'>,
+  ) {
+    const { userId, userLogin, commentId } = dto
+
+    const result = await this.dataSource.query(
+      `
+      WITH checked AS (
+        SELECT * FROM "commentLike"
+        WHERE "userId" = $1 AND "commentId" = $3 AND "addedAt" IS NOT NULL
+    ),
+     inserted AS (
+        INSERT INTO "commentLike" ("userId", "userLogin", "commentId")
+        VALUES ($1, $2, $3)
+        RETURNING *
+    )
+    SELECT * FROM checked
+    UNION ALL
+    SELECT * FROM inserted
+    `,
+      [userId, userLogin, commentId],
+    )
+
+    return result.map(({ status, commentId, addedAt }) => ({
+      status,
+      commentId,
+      addedAt,
+    }))
+  }
+
+  public async getCommentLikesByUserId(userId: string) {
+    return await this.dataSource.query(
+      `
+      SELECT * FROM "commentLike"
+      WHERE "userId" = $1
+    `,
+      [userId],
+    )
+  }
+
+  public async updateUserCommentLikes(
+    dto: { commentId: string; userId: string } & BaseCommentLikeDto,
+  ) {
+    const { commentId, userId, likeStatus } = dto
+
+    const result = await this.dataSource.query(
+      `
+     UPDATE "commentLike"
+     SET "status" = $3, "addedAt" = $4
+     WHERE "userId" = $1 AND "commentId" = $2
+     `,
+      [userId, commentId, likeStatus, new Date()],
+    )
+
+    return result[1]
+  }
 }
 
 export { LikesSqlRepository }

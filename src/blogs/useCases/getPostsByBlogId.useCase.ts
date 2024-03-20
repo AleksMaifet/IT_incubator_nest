@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { PostsService, PostsSqlRepository } from '../../posts'
+import { LikesSqlRepository } from '../../likes'
 import { GetBlogsRequestQuery } from '../interfaces'
-import { LikesService } from '../../likes'
 
 class GetPostsByBlogIdCommand {
   constructor(
@@ -19,7 +19,7 @@ class GetPostsByBlogIdUseCase
 {
   constructor(
     private readonly postsService: PostsService,
-    private readonly likesService: LikesService,
+    private readonly likesSqlRepository: LikesSqlRepository,
     private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
 
@@ -34,15 +34,13 @@ class GetPostsByBlogIdUseCase
       return posts
     }
 
-    const likes = await this.likesService.getUserLikesByUserId(userId)
+    const likes = await this.likesSqlRepository.getPostLikesByUserId(userId)
 
     if (!likes) {
       return posts
     }
 
-    const { likeStatusPosts } = likes
-
-    return this.postsService.mapGenerateLikeResponse(posts, likeStatusPosts)
+    return this.postsService.mapGenerateLikeResponse(posts, likes)
   }
 }
 

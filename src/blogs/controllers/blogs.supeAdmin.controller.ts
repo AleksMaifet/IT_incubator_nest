@@ -140,10 +140,6 @@ export class BlogsSupeAdminController {
         },
       }),
     )
-
-    // if (userId !== comment?.commentatorInfo.userId) {
-    //   throw new ForbiddenException()
-    // }
   }
 
   @UseGuards(BasicAuthGuard)

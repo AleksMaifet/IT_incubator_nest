@@ -1,5 +1,4 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { LIKE_COMMENT_USER_STATUS_ENUM } from '../../../comments'
 
 @Entity('comments')
 export class CommentPgEntity {
@@ -21,10 +20,9 @@ export class CommentPgEntity {
   @Column()
   createdAt: Date
 
-  @Column({ type: 'jsonb' })
-  likesInfo: {
-    likesCount: number
-    dislikesCount: number
-    myStatus: LIKE_COMMENT_USER_STATUS_ENUM
-  }
+  @Column()
+  likesCount: number
+
+  @Column()
+  dislikesCount: number
 }

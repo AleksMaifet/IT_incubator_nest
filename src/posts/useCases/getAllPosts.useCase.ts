@@ -5,7 +5,7 @@ import {
   PostsService,
   PostsSqlRepository,
 } from '../../posts'
-import { LikesService } from '../../likes'
+import { LikesSqlRepository } from '../../likes'
 
 class GetAllPostsCommand {
   constructor(
@@ -21,7 +21,7 @@ class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
   constructor(
     @Inject(forwardRef(() => PostsService))
     private readonly postsService: PostsService,
-    private readonly likesService: LikesService,
+    private readonly likesSqlRepository: LikesSqlRepository,
     @Inject(forwardRef(() => PostsSqlRepository))
     private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
@@ -37,15 +37,13 @@ class GetAllPostsUseCase implements ICommandHandler<GetAllPostsCommand> {
       return posts
     }
 
-    const likes = await this.likesService.getUserLikesByUserId(userId)
+    const likes = await this.likesSqlRepository.getPostLikesByUserId(userId)
 
     if (!likes) {
       return posts
     }
 
-    const { likeStatusPosts } = likes
-
-    return this.postsService.mapGenerateLikeResponse(posts, likeStatusPosts)
+    return this.postsService.mapGenerateLikeResponse(posts, likes)
   }
 }
 

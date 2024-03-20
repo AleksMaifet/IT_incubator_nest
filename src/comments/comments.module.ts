@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { CqrsModule } from '@nestjs/cqrs'
 import { LikesModule } from '../likes'
 import { JwtService } from '../configs'
-import { CommentsService } from './comments.service'
 import { CommentsController } from './comments.controller'
 import { CommentsRepository, CommentsSqlRepository } from './repositories'
 import { CommentModel, CommentSchema } from './comment.model'
@@ -13,6 +12,7 @@ import {
   GetAllCommentsByPostIdUseCase,
   GetCommentByIdUseCase,
   UpdateCommentByIdUseCase,
+  UpdateCommentLikeByIdUseCase,
 } from './useCases'
 
 const useCases = [
@@ -21,6 +21,7 @@ const useCases = [
   GetCommentByIdUseCase,
   UpdateCommentByIdUseCase,
   DeleteCommentByIdUseCase,
+  UpdateCommentLikeByIdUseCase,
 ]
 
 @Module({
@@ -36,13 +37,11 @@ const useCases = [
   ],
   controllers: [CommentsController],
   providers: [
-    CommentsService,
     CommentsRepository,
     CommentsSqlRepository,
     JwtService,
     Logger,
     ...useCases,
   ],
-  exports: [CommentsService],
 })
 export class CommentsModule {}

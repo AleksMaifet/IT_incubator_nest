@@ -1,14 +1,14 @@
 import { LIKE_COMMENT_USER_STATUS_ENUM } from '../comments'
 import { LIKE_POST_USER_STATUS_ENUM } from '../posts'
 
-type CommentInfoLikeType<T> = {
-  status: T
+type CommentInfoLikeType = {
+  status: LIKE_COMMENT_USER_STATUS_ENUM
   commentId: string
   addedAt: Date
 }
 
-type PostInfoLikeType<T> = {
-  status: T
+type PostInfoLikeType = {
+  status: LIKE_POST_USER_STATUS_ENUM
   postId: string
   addedAt: Date
 }
@@ -18,8 +18,8 @@ interface ILikes {
     userId: string
     userLogin: string
   }
-  likeStatusComments: CommentInfoLikeType<LIKE_COMMENT_USER_STATUS_ENUM>[]
-  likeStatusPosts: PostInfoLikeType<LIKE_POST_USER_STATUS_ENUM>[]
+  likeStatusComments: CommentInfoLikeType[]
+  likeStatusPosts: PostInfoLikeType[]
 }
 
 export { ILikes, CommentInfoLikeType, PostInfoLikeType }

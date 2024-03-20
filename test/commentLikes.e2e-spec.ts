@@ -13,8 +13,6 @@ import {
   makeAuthBearerRequest,
 } from './helpers'
 
-//TODO change file name after time!
-
 describe('Comment likes', () => {
   let application: INestApplication
   let mongo: MongoMemoryServer
@@ -98,21 +96,21 @@ describe('Comment likes', () => {
     'POST -> "/posts/:postId/comments": should create new comment; status 201; content: ' +
       'created comment; used additional methods: POST -> /blogs, POST -> /posts, GET -> /comments/:commentId',
     async () => {
-      /// Created blog
-      const blogRes = await makeAuthBasicRequest(
+      const resBlog = await makeAuthBasicRequest(
         httpServer,
         'post',
-        '/blogs',
+        '/sa/blogs',
         BLOG_DATA,
-      )
+      ).expect(201)
 
-      /// Created post
-      const postRes = await makeAuthBasicRequest(httpServer, 'post', '/posts', {
-        ...POST_DATA,
-        blogId: blogRes.body.id,
-      })
+      const resPost = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        `/sa/blogs/${resBlog.body.id}/posts`,
+        POST_DATA,
+      ).expect(201)
 
-      postId = postRes.body.id
+      postId = resPost.body.id
 
       const response = await makeAuthBearerRequest(
         httpServer,
@@ -128,6 +126,10 @@ describe('Comment likes', () => {
 
       expect(response.status).toBe(201)
       expect(response.body).toHaveProperty('id')
+      expect(response.body).toHaveProperty('content')
+      expect(response.body).toHaveProperty('commentatorInfo')
+      expect(response.body).toHaveProperty('createdAt')
+      expect(response.body).toHaveProperty('likesInfo')
     },
   )
 
@@ -384,6 +386,7 @@ describe('Comment likes', () => {
       'GET => /comments/:id',
     async () => {
       const stash = ['Like', 'Dislike']
+
       const resPostComment = await makeAuthBearerRequest(
         httpServer,
         'post',

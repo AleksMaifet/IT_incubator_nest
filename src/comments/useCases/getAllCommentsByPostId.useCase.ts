@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
-import { CommentInfoLikeType, LikesRepository } from '../../likes'
+import { CommentInfoLikeType, LikesSqlRepository } from '../../likes'
 import {
   GetCommentsRequestQuery,
   ICommentsResponse,
@@ -26,12 +26,12 @@ class GetAllCommentsByPostIdUseCase
 {
   constructor(
     private readonly commentsSqlRepository: CommentsSqlRepository,
-    private readonly likesRepository: LikesRepository,
+    private readonly likesSqlRepository: LikesSqlRepository,
   ) {}
 
   private _mapGenerateLikeResponse(
     comments: ICommentsResponse,
-    likeStatusComments: CommentInfoLikeType<LIKE_COMMENT_USER_STATUS_ENUM>[],
+    likeStatusComments: CommentInfoLikeType[],
   ) {
     const stash: Record<string, number> = {}
 
@@ -85,15 +85,13 @@ class GetAllCommentsByPostIdUseCase
       return comments
     }
 
-    const likes = await this.likesRepository.getUserLikesByUserId(userId)
+    const likes = await this.likesSqlRepository.getCommentLikesByUserId(userId)
 
     if (!likes) {
       return comments
     }
 
-    const { likeStatusComments } = likes
-
-    return this._mapGenerateLikeResponse(comments, likeStatusComments)
+    return this._mapGenerateLikeResponse(comments, likes)
   }
 }
 

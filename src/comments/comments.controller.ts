@@ -16,20 +16,17 @@ import { JwtAuthGuard } from '../libs/guards'
 import { User, UUIDParam } from '../libs/decorators'
 import { IJwtUser } from '../libs/interfaces'
 import { HttpRequestHeaderUserInterceptor } from '../libs/interceptors'
-import { CommentsService } from './comments.service'
 import { BaseCommentDto, BaseCommentLikeDto } from './dto'
 import {
   DeleteCommentByIdCommand,
   GetCommentByIdCommand,
   UpdateCommentByIdCommand,
+  UpdateCommentLikeByIdCommand,
 } from './useCases'
 
 @Controller('comments')
 export class CommentsController {
-  constructor(
-    private readonly commentsService: CommentsService,
-    private readonly commandBus: CommandBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @UseInterceptors(HttpRequestHeaderUserInterceptor)
   @Get(':id')
@@ -119,13 +116,15 @@ export class CommentsController {
       throw new NotFoundException({ message: 'comment is not exists' })
     }
 
-    return await this.commentsService.updateLikeById({
-      commentId: id,
-      user: {
-        id: userId,
-        login,
-      },
-      likeStatus,
-    })
+    return await this.commandBus.execute(
+      new UpdateCommentLikeByIdCommand({
+        commentId: id,
+        user: {
+          id: userId,
+          login,
+        },
+        likeStatus,
+      }),
+    )
   }
 }

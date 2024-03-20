@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { CommentsSqlRepository } from '../repositories'
-import { LikesRepository } from '../../likes'
+import { LikesSqlRepository } from '../../likes'
 
 class GetCommentByIdCommand {
   constructor(public readonly payload: { id: string; userId: string }) {}
@@ -10,7 +10,7 @@ class GetCommentByIdCommand {
 class GetCommentByIdUseCase implements ICommandHandler<GetCommentByIdCommand> {
   constructor(
     private readonly commentsSqlRepository: CommentsSqlRepository,
-    private readonly likesRepository: LikesRepository,
+    private readonly likesSqlRepository: LikesSqlRepository,
   ) {}
 
   async execute(command: GetCommentByIdCommand) {
@@ -24,13 +24,13 @@ class GetCommentByIdUseCase implements ICommandHandler<GetCommentByIdCommand> {
       return comment
     }
 
-    const likes = await this.likesRepository.getUserLikesByUserId(userId)
+    const likes = await this.likesSqlRepository.getCommentLikesByUserId(userId)
 
     if (!likes) {
       return comment
     }
 
-    likes.likeStatusComments.forEach((l) => {
+    likes.forEach((l) => {
       if (l.commentId === comment.id) {
         comment.likesInfo = {
           ...comment.likesInfo,

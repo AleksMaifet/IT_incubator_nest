@@ -6,18 +6,32 @@ import {
   IComments,
   ICommentsResponse,
 } from '../interfaces'
+import { DEFAULTS_COMMENT_LIKE_STATUS } from '../constants'
+import { BaseCommentLikeDto } from '../dto'
+
+const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_COMMENT_LIKE_STATUS
 
 @Injectable()
 class CommentsSqlRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   private _mapGenerateCommentResponse(
-    comment: Pick<IComments, 'id' | 'content' | 'createdAt' | 'likesInfo'> & {
+    comment: Pick<IComments, 'id' | 'content' | 'createdAt'> & {
       userId: string
       userLogin: string
+      likesCount: number
+      dislikesCount: number
     },
   ) {
-    const { id, content, userId, userLogin, createdAt, likesInfo } = comment
+    const {
+      id,
+      content,
+      userId,
+      userLogin,
+      createdAt,
+      likesCount,
+      dislikesCount,
+    } = comment
 
     return {
       id: id,
@@ -27,21 +41,39 @@ class CommentsSqlRepository {
         userLogin: userLogin,
       },
       createdAt: createdAt,
-      likesInfo: likesInfo,
+      likesInfo: {
+        likesCount,
+        dislikesCount,
+        myStatus: MY_STATUS,
+      },
     }
   }
 
   public async create(dto: IComments) {
-    const { postId, content, commentatorInfo, createdAt, likesInfo } = dto
+    const {
+      postId,
+      content,
+      commentatorInfo,
+      createdAt,
+      likesInfo: { likesCount, dislikesCount },
+    } = dto
     const { userId, userLogin } = commentatorInfo
 
     const result = await this.dataSource.query(
       `
-        INSERT INTO comments ("postId", content, "userId", "userLogin", "createdAt", "likesInfo")
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO comments ("postId", content, "userId", "userLogin", "createdAt", "likesCount", "dislikesCount")
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
     `,
-      [postId, content, userId, userLogin, createdAt, likesInfo],
+      [
+        postId,
+        content,
+        userId,
+        userLogin,
+        createdAt,
+        likesCount,
+        dislikesCount,
+      ],
     )
 
     return result.map(this._mapGenerateCommentResponse)[0]
@@ -127,51 +159,37 @@ class CommentsSqlRepository {
     return result[1]
   }
 
-  // public async updateLikeWithStatusLikeOrDislike(
-  //   dto: {
-  //     commentId: string
-  //     isFirstTime: boolean
-  //   } & BaseCommentLikeDto,
-  // ) {
-  //   const { commentId, likeStatus, isFirstTime } = dto
-  //
-  //   const comment = await this.commentModel.findOne({ id: commentId })
-  //   const currentComment = comment!
-  //   const { likesInfo } = currentComment
-  //
-  //   switch (likeStatus as string) {
-  //     case LIKE_COMMENT_USER_STATUS_ENUM.None:
-  //       likesInfo.likesCount = LIKES_COUNT
-  //       likesInfo.dislikesCount = DISLIKES_COUNT
-  //       break
-  //     case LIKE_COMMENT_USER_STATUS_ENUM.Like:
-  //       likesInfo.likesCount += 1
-  //
-  //       if (isFirstTime) {
-  //         break
-  //       }
-  //
-  //       likesInfo.dislikesCount -= 1
-  //
-  //       break
-  //     case LIKE_COMMENT_USER_STATUS_ENUM.Dislike:
-  //       likesInfo.dislikesCount += 1
-  //
-  //       if (isFirstTime) {
-  //         break
-  //       }
-  //
-  //       likesInfo.likesCount -= 1
-  //
-  //       break
-  //     default:
-  //       break
-  //   }
-  //
-  //   comment.markModified('likesInfo')
-  //
-  //   return await currentComment.save()
-  // }
+  public async updateLikeWithStatusLikeOrDislike(
+    dto: {
+      commentId: string
+      isFirstTime: boolean
+    } & BaseCommentLikeDto,
+  ) {
+    const { commentId, likeStatus, isFirstTime } = dto
+
+    const result = await this.dataSource.query(
+      `
+      UPDATE comments
+      SET
+        "likesCount" = CASE
+            WHEN $2 = 'None' THEN ${LIKES_COUNT}
+            WHEN $2 = 'Like' AND $3 THEN "likesCount" + 1
+            WHEN $2 = 'Dislike' AND NOT $3 THEN GREATEST("likesCount" - 1, ${LIKES_COUNT})
+      ELSE "likesCount"
+      END,
+        "dislikesCount" = CASE
+            WHEN $2 = 'None' THEN ${DISLIKES_COUNT}
+            WHEN $2 = 'Dislike' AND $3 THEN "dislikesCount" + 1
+            WHEN $2 = 'Like' AND NOT $3 THEN GREATEST("dislikesCount" - 1, ${DISLIKES_COUNT})
+      ELSE "dislikesCount"
+      END
+      WHERE id = $1
+    `,
+      [commentId, likeStatus, isFirstTime],
+    )
+
+    return result[1]
+  }
 }
 
 export { CommentsSqlRepository }

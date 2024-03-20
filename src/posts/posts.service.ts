@@ -13,7 +13,7 @@ const { SORT_DIRECTION, PAGE_NUMBER, PAGE_SIZE, SORT_BY } = DEFAULTS
 export class PostsService {
   public mapGenerateLikeResponse(
     posts: IPostsResponse,
-    likeStatusPosts: PostInfoLikeType<LIKE_POST_USER_STATUS_ENUM>[],
+    likeStatusPosts: PostInfoLikeType[],
   ) {
     const stash: Record<string, number> = {}
 

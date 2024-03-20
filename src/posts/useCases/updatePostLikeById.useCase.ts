@@ -2,11 +2,11 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { forwardRef, Inject } from '@nestjs/common'
 import {
   BasePostLikeDto,
-  PostsRepository,
+  PostsSqlRepository,
   UserLikeInfoEntity,
 } from '../../posts'
 import { IUser } from '../../users'
-import { LikesService } from '../../likes'
+import { LikesSqlRepository, PostInfoLikeType } from '../../likes'
 
 class UpdatePostLikeByIdCommand {
   constructor(
@@ -22,9 +22,9 @@ class UpdatePostLikeByIdUseCase
   implements ICommandHandler<UpdatePostLikeByIdCommand>
 {
   constructor(
-    private readonly likesService: LikesService,
-    @Inject(forwardRef(() => PostsRepository))
-    private readonly postsRepository: PostsRepository,
+    private readonly likesSqlRepository: LikesSqlRepository,
+    @Inject(forwardRef(() => PostsSqlRepository))
+    private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
 
   async execute(command: UpdatePostLikeByIdCommand) {
@@ -34,39 +34,34 @@ class UpdatePostLikeByIdUseCase
       user: { id, login },
     } = command.payload
 
-    const newUserLikeInfo = new UserLikeInfoEntity(id, login)
+    const {
+      userId,
+      login: userLogin,
+      addedAt,
+    } = new UserLikeInfoEntity(id, login)
 
-    const { likeStatusPosts } = await this.likesService.create({
-      userId: id,
-      userLogin: login,
+    const likeStatusPosts = await this.likesSqlRepository.createPostLike({
+      userId,
+      userLogin,
+      postId,
     })
-
-    if (!likeStatusPosts) return
 
     const isExist = likeStatusPosts.findIndex(
-      (info) => info.postId === postId && info.status === likeStatus,
+      (info: PostInfoLikeType) => info.postId === postId && info.addedAt,
     )
 
-    const isFirst = likeStatusPosts.findIndex((info) => info.postId === postId)
+    await this.likesSqlRepository.updateUserPostLikes({
+      userId,
+      likeStatus,
+      postId,
+      addedAt,
+    })
 
-    if (isExist !== -1) {
-      return
-    }
-
-    await this.likesService.updateUserPostLikes({
-      userId: id,
+    return await this.postsSqlRepository.updateLikeWithStatusLikeOrDislike({
+      isFirstTime: isExist === -1,
       likeStatus,
       postId,
     })
-
-    await this.postsRepository.updateLikeWithStatusLikeOrDislike({
-      isFirstTime: isFirst === -1,
-      likeStatus,
-      postId,
-      userLikeInfo: newUserLikeInfo,
-    })
-
-    return true
   }
 }
 

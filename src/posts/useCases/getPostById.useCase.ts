@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { forwardRef, Inject } from '@nestjs/common'
 import { PostsSqlRepository } from '../../posts'
-import { LikesService } from '../../likes'
+import { LikesSqlRepository } from '../../likes'
 
 class GetPostByIdCommand {
   constructor(public readonly payload: { id: string; userId: string }) {}
@@ -10,7 +10,7 @@ class GetPostByIdCommand {
 @CommandHandler(GetPostByIdCommand)
 class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
   constructor(
-    private readonly likesService: LikesService,
+    private readonly likesSqlRepository: LikesSqlRepository,
     @Inject(forwardRef(() => PostsSqlRepository))
     private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
@@ -26,13 +26,13 @@ class GetPostByIdUseCase implements ICommandHandler<GetPostByIdCommand> {
       return post
     }
 
-    const likes = await this.likesService.getUserLikesByUserId(userId)
+    const likes = await this.likesSqlRepository.getPostLikesByUserId(userId)
 
     if (!likes) {
       return post
     }
 
-    likes.likeStatusPosts.forEach((l) => {
+    likes.forEach((l) => {
       if (l.postId === post.id) {
         post.extendedLikesInfo = {
           ...post.extendedLikesInfo,
