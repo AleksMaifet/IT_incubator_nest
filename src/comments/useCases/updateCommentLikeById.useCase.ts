@@ -1,6 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { IUser } from '../../users'
-import { CommentInfoLikeType, LikesSqlRepository } from '../../likes'
+import {
+  CommentInfoLikeType,
+  LikesSqlRepository,
+  PostInfoLikeType,
+} from '../../likes'
 import { BaseCommentLikeDto } from '../dto'
 import { CommentsSqlRepository } from '../repositories'
 
@@ -37,6 +41,13 @@ class UpdateCommentLikeByIdUseCase
 
     const isExist = likeStatusComments.findIndex(
       (info: CommentInfoLikeType) =>
+        info.commentId === commentId && info.status === likeStatus,
+    )
+
+    if (isExist !== -1) return
+
+    const isFirst = likeStatusComments.findIndex(
+      (info: CommentInfoLikeType) =>
         info.commentId === commentId && info.addedAt,
     )
 
@@ -47,7 +58,7 @@ class UpdateCommentLikeByIdUseCase
     })
 
     return this.commentsSqlRepository.updateLikeWithStatusLikeOrDislike({
-      isFirstTime: isExist === -1,
+      isFirstTime: isFirst === -1,
       likeStatus,
       commentId,
     })

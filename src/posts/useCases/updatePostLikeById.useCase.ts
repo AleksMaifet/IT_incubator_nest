@@ -47,6 +47,13 @@ class UpdatePostLikeByIdUseCase
     })
 
     const isExist = likeStatusPosts.findIndex(
+      (info: PostInfoLikeType) =>
+        info.postId === postId && info.status === likeStatus,
+    )
+
+    if (isExist !== -1) return
+
+    const isFirst = likeStatusPosts.findIndex(
       (info: PostInfoLikeType) => info.postId === postId && info.addedAt,
     )
 
@@ -58,7 +65,7 @@ class UpdatePostLikeByIdUseCase
     })
 
     return await this.postsSqlRepository.updateLikeWithStatusLikeOrDislike({
-      isFirstTime: isExist === -1,
+      isFirstTime: isFirst === -1,
       likeStatus,
       postId,
     })

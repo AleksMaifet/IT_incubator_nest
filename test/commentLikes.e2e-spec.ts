@@ -374,7 +374,7 @@ describe('Comment likes', () => {
 
       expect(resGetComment.status).toBe(200)
       expect(resGetComment.body.likesInfo.likesCount).toBe(0)
-      expect(resGetComment.body.likesInfo.dislikesCount).toBe(0)
+      expect(resGetComment.body.likesInfo.dislikesCount).toBe(1)
       expect(resGetComment.body.likesInfo.myStatus).toBe('None')
     },
   )

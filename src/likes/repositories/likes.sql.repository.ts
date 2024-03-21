@@ -14,24 +14,26 @@ class LikesSqlRepository {
     } & Pick<PostInfoLikeType, 'postId'>,
   ) {
     const { userId, userLogin, postId } = dto
+    let result
 
-    const result = await this.dataSource.query(
+    result = await this.dataSource.query(
       `
-      WITH checked AS (
         SELECT * FROM "postLike"
-        WHERE "userId" = $1 AND "postId" = $3 AND "addedAt" IS NOT NULL
-    ),
-     inserted AS (
-        INSERT INTO "postLike" ("userId", "userLogin", "postId")
-        VALUES ($1, $2, $3)
-        RETURNING *
-    )
-    SELECT * FROM checked
-    UNION ALL
-    SELECT * FROM inserted
+        WHERE "userId" = $1 AND "postId" = $2 AND "addedAt" IS NOT NULL
     `,
-      [userId, userLogin, postId],
+      [userId, postId],
     )
+
+    if (!result[0]) {
+      result = await this.dataSource.query(
+        `
+            INSERT INTO "postLike" ("userId", "userLogin", "postId")
+            VALUES ($1, $2, $3)
+            RETURNING *
+    `,
+        [userId, userLogin, postId],
+      )
+    }
 
     return result.map(({ status, postId, addedAt }) => ({
       status,
