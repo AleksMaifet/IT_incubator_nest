@@ -16,6 +16,9 @@ class PostgresService {
   public async getConfig() {
     const isSSL = this.configService.get('NODE_ENV') === 'prod'
 
+    console.log(this.configService.get('NODE_ENV'))
+    console.log(isSSL)
+
     return {
       type: this.configService.get('POSTGRES_DB_TYPE'),
       host: this.configService.get('POSTGRES_DB_HOST'),
