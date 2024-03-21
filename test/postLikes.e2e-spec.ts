@@ -368,8 +368,6 @@ describe('Post likes', () => {
         `/posts/${resPost.body.id}`,
       )
 
-      console.log(resGetPost.body.extendedLikesInfo.dislikesCount, '@')
-
       expect(resGetPost.status).toBe(200)
       expect(resGetPost.body.extendedLikesInfo.likesCount).toBe(0)
       expect(resGetPost.body.extendedLikesInfo.dislikesCount).toBe(0)
