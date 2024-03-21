@@ -1,10 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { IUser } from '../../users'
-import {
-  CommentInfoLikeType,
-  LikesSqlRepository,
-  PostInfoLikeType,
-} from '../../likes'
+import { CommentInfoLikeType, LikesSqlRepository } from '../../likes'
 import { BaseCommentLikeDto } from '../dto'
 import { CommentsSqlRepository } from '../repositories'
 

@@ -258,12 +258,14 @@ class PostsSqlRepository {
       UPDATE posts
       SET
         "likesCount" = CASE
+            WHEN $2 = 'None' THEN ${LIKES_COUNT}
             WHEN $2 = 'Like' AND $3 THEN "likesCount" + 1
             WHEN $2 = 'Like' AND NOT $3 THEN "likesCount" + 1
             WHEN $2 = 'Dislike' AND NOT $3 THEN GREATEST("likesCount" - 1, ${LIKES_COUNT})
       ELSE "likesCount"
       END,
         "dislikesCount" = CASE
+            WHEN $2 = 'None' THEN ${DISLIKES_COUNT}
             WHEN $2 = 'Dislike' AND $3 THEN "dislikesCount" + 1
             WHEN $2 = 'Dislike' AND NOT $3 THEN "dislikesCount" + 1
             WHEN $2 = 'Like' AND NOT $3 THEN GREATEST("dislikesCount" - 1, ${DISLIKES_COUNT})
