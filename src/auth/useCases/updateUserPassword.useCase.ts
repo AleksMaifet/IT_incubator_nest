@@ -23,7 +23,7 @@ class UpdateUserPasswordUseCase
     const confirmation =
       await this.authSqlRepository.getConfirmationByCodeOrUserId(recoveryCode)
 
-    const userId = confirmation.userId
+    const userId = confirmation.user.id
 
     await this.authSqlRepository.deleteConfirmationByCodeORUserId(userId)
 

@@ -15,13 +15,13 @@ import {
 } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import {
+  BasePostDto,
   CreateBlogDto,
   DeletePostByIdDto,
   UpdateBlogDto,
   UpdatePostByIdDto,
 } from '../dto'
 import { GetBlogsRequestQuery } from '../interfaces'
-import { BasePostDto } from '../../posts'
 import {
   CreateBlogCommand,
   CreatePostByBlogIdCommand,

@@ -1,43 +1,51 @@
 import { Injectable } from '@nestjs/common'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { GetUsersRequestQuery, IUser, IUsersResponse } from '../interfaces'
+import { UserModelEntity } from '../../configs/postgres/entities'
 
 @Injectable()
 class UsersSqlRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(UserModelEntity)
+    private readonly repository: Repository<UserModelEntity>,
+  ) {}
 
   private async _getAllBySearchLoginOrEmailTerm(
     dto: GetUsersRequestQuery<number>,
   ) {
-    const { searchEmailTerm, searchLoginTerm, ...rest } = dto
+    const {
+      searchEmailTerm,
+      searchLoginTerm,
+      pageSize,
+      pageNumber,
+      sortBy,
+      sortDirection,
+    } = dto
 
-    const totalCountRequest = await this.dataSource.query(
-      `
-      SELECT count(*) FROM users
-      WHERE LOWER(email) LIKE LOWER($1) OR LOWER(login) LIKE LOWER($2)
-    `,
-      [`%${searchEmailTerm}%`, `%${searchLoginTerm}%`],
-    )
+    const queryBuilder = this.repository
+      .createQueryBuilder('u')
+      .where('LOWER(u.email) LIKE LOWER(:email)', {
+        email: `%${searchEmailTerm}%`,
+      })
+      .orWhere('LOWER(u.login) LIKE LOWER(:login)', {
+        login: `%${searchLoginTerm}%`,
+      })
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
 
-    const { response } = this._createdFindOptionsAndResponse({
-      ...rest,
-      totalCount: Number(totalCountRequest[0].count),
+    const totalCount = await queryBuilder.getCount()
+
+    const { response, skip } = this._createdFindOptionsAndResponse({
+      totalCount,
+      pageSize,
+      pageNumber,
     })
 
-    const query = `
-    SELECT id, login, email, "createdAt" FROM users
-    WHERE LOWER(email) LIKE LOWER($1) OR LOWER(login) LIKE LOWER($2)
-    ORDER BY "${dto.sortBy}" COLLATE "C" ${dto.sortDirection}
-    LIMIT $3 OFFSET $4;
-    `
-
-    response.items = await this.dataSource.query(query, [
-      `%${searchEmailTerm}%`,
-      `%${searchLoginTerm}%`,
-      dto.pageSize,
-      (dto.pageNumber - 1) * dto.pageSize,
-    ])
+    response.items = await queryBuilder
+      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .skip(skip)
+      .take(pageSize)
+      .getMany()
 
     return response
   }
@@ -48,26 +56,23 @@ class UsersSqlRepository {
       'searchLoginTerm' | 'searchEmailTerm'
     >,
   ) {
-    const totalCountRequest = await this.dataSource.query(`
-      SELECT count(*) FROM users
-    `)
+    const { pageSize, pageNumber, sortBy, sortDirection } = dto
 
-    const { response } = this._createdFindOptionsAndResponse({
-      ...dto,
-      totalCount: Number(totalCountRequest[0].count),
+    const totalCount = await this.repository.createQueryBuilder().getCount()
+
+    const { response, skip } = this._createdFindOptionsAndResponse({
+      pageNumber,
+      pageSize,
+      totalCount,
     })
 
-    // TODO think about sql injections
-    const query = `
-      SELECT id, login, email, "createdAt" from users
-      ORDER BY "${dto.sortBy}" ${dto.sortDirection}
-      LIMIT $1 OFFSET $2;
-    `
-
-    response.items = await this.dataSource.query(query, [
-      dto.pageSize,
-      (dto.pageNumber - 1) * dto.pageSize,
-    ])
+    response.items = await this.repository
+      .createQueryBuilder('u')
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
+      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .skip(skip)
+      .take(pageSize)
+      .getMany()
 
     return response
   }
@@ -75,33 +80,28 @@ class UsersSqlRepository {
   private async _getAllWithoutSearchLoginTerm(
     dto: Omit<GetUsersRequestQuery<number>, 'searchLoginTerm'>,
   ) {
-    const { searchEmailTerm, ...rest } = dto
+    const { searchEmailTerm, pageNumber, pageSize, sortDirection, sortBy } = dto
 
-    // TODO think about sql injections
-    const query = `
-      SELECT id, login, email, "createdAt" from users
-      WHERE LOWER(email) LIKE LOWER($1)
-      ORDER BY 
-        CASE 
-            WHEN ASCII(email) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
-            ELSE 2
-        END,
-            "${dto.sortBy}" ${dto.sortDirection}
-      LIMIT $2 OFFSET $3;
-    `
+    const queryBuilder = this.repository
+      .createQueryBuilder('u')
+      .where('LOWER(u.email) LIKE LOWER(:email)', {
+        email: `%${searchEmailTerm}%`,
+      })
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
 
-    const getUserByEmail = await this.dataSource.query(query, [
-      `%${searchEmailTerm}%`,
-      dto.pageSize,
-      (dto.pageNumber - 1) * dto.pageSize,
-    ])
+    const totalCount = await queryBuilder.getCount()
 
-    const { response } = this._createdFindOptionsAndResponse({
-      ...rest,
-      totalCount: getUserByEmail.length,
+    const { response, skip } = this._createdFindOptionsAndResponse({
+      pageSize,
+      pageNumber,
+      totalCount,
     })
 
-    response.items = getUserByEmail
+    response.items = await queryBuilder
+      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .skip(skip)
+      .take(pageSize)
+      .getMany()
 
     return response
   }
@@ -109,48 +109,41 @@ class UsersSqlRepository {
   private async _getAllWithoutSearchEmailTerm(
     dto: Omit<GetUsersRequestQuery<number>, 'searchEmailTerm'>,
   ) {
-    const { searchLoginTerm, ...rest } = dto
+    const { searchLoginTerm, pageNumber, pageSize, sortBy, sortDirection } = dto
 
-    // TODO think about sql injections
-    const query = `
-      SELECT id, login, email, "createdAt" from users
-      WHERE LOWER(login) LIKE LOWER($1)
-      ORDER BY 
-        CASE 
-            WHEN ASCII(login) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
-            ELSE 2
-        END,
-            "${dto.sortBy}" ${dto.sortDirection}
-      LIMIT $2 OFFSET $3;
-    `
+    const queryBuilder = this.repository
+      .createQueryBuilder('u')
+      .where('LOWER(u.login) LIKE LOWER(:login)', {
+        login: `%${searchLoginTerm}%`,
+      })
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
 
-    const getUserByEmail = await this.dataSource.query(query, [
-      `%${searchLoginTerm}%`,
-      dto.pageSize,
-      (dto.pageNumber - 1) * dto.pageSize,
-    ])
+    const totalCount = await queryBuilder.getCount()
 
-    const { response } = this._createdFindOptionsAndResponse({
-      ...rest,
-      totalCount: getUserByEmail.length,
+    const { response, skip } = this._createdFindOptionsAndResponse({
+      pageNumber,
+      pageSize,
+      totalCount,
     })
 
-    response.items = getUserByEmail
+    response.items = await queryBuilder
+      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .skip(skip)
+      .take(pageSize)
+      .getMany()
 
     return response
   }
 
   private _createdFindOptionsAndResponse(
-    dto: Omit<
-      GetUsersRequestQuery<number> & {
-        totalCount: number
-      },
-      'searchLoginTerm' | 'searchEmailTerm'
-    >,
+    dto: Pick<GetUsersRequestQuery<number>, 'pageNumber' | 'pageSize'> & {
+      totalCount: number
+    },
   ) {
     const { totalCount, pageNumber, pageSize } = dto
 
     const pagesCount = Math.ceil(totalCount / pageSize)
+    const skip = (pageNumber - 1) * pageSize
 
     const response: IUsersResponse = {
       pagesCount,
@@ -160,7 +153,7 @@ class UsersSqlRepository {
       items: [],
     }
 
-    return { response }
+    return { response, skip }
   }
 
   public async getAll(dto: GetUsersRequestQuery<number>) {
@@ -185,27 +178,24 @@ class UsersSqlRepository {
   }
 
   public async getById(id: string) {
-    const result = await this.dataSource.query(
-      `
-       SELECT id, login, email, "createdAt" from users
-       WHERE id = $1
-    `,
-      [id],
-    )
-
-    return result[0]
+    return await this.repository
+      .createQueryBuilder('u')
+      .where('u.id = :id', { id })
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
+      .getOne()
   }
 
   public async create(dto: IUser) {
-    const query = `
-    INSERT INTO users (login, email, "passwordSalt", "passwordHash", "createdAt")
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id, login, email, "createdAt"
-    `
+    const result = await this.repository.save(dto)
 
-    const result = await this.dataSource.query(query, Object.values(dto))
+    const { id, login, email, createdAt } = result
 
-    return result[0]
+    return {
+      id,
+      login,
+      email,
+      createdAt,
+    }
   }
 
   public async updatePassword(
@@ -213,40 +203,30 @@ class UsersSqlRepository {
   ) {
     const { id, passwordHash, passwordSalt } = dto
 
-    const query = `
-      UPDATE users
-      SET "passwordHash" = $2, "passwordSalt" = $3
-      WHERE id = $1
-    `
-    const result = await this.dataSource.query(query, [
-      id,
-      passwordHash,
-      passwordSalt,
-    ])
-
-    return result[1]
+    return await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ passwordHash, passwordSalt })
+      .where('id = :id', { id })
+      .execute()
   }
 
   public async getByLoginOrEmail(loginOrEmail: string) {
-    const query = `
-      SELECT * FROM users
-      WHERE LOWER(login) = LOWER($1) OR LOWER(email) = LOWER($1)
-    `
-
-    const result = await this.dataSource.query(query, [loginOrEmail])
-
-    return result[0]
+    return await this.repository
+      .createQueryBuilder()
+      .where('LOWER(login) = LOWER(:loginOrEmail)', {
+        loginOrEmail,
+      })
+      .orWhere('LOWER(email) = LOWER(:loginOrEmail)', {
+        loginOrEmail,
+      })
+      .getOne()
   }
 
   public async deleteById(id: string) {
-    const query = `
-      DELETE from users
-      WHERE id = $1
-    `
+    const result = await this.repository.delete(id)
 
-    const result = await this.dataSource.query(query, [id])
-
-    return result[1]
+    return result.affected
   }
 }
 

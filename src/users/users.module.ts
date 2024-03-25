@@ -5,12 +5,14 @@ import { UsersController } from './users.controller'
 import { UsersService } from './users.service'
 import { UserModel, UserSchema } from './user.model'
 import { CustomUserValidationByEmail, CustomUserValidationByLogin } from './dto'
-import { UsersSqlRepository, UsersRepository } from './repositories'
+import { UsersRepository, UsersSqlRepository } from './repositories'
 import {
   CreateUserUseCase,
   DeleteUserByIdUseCase,
   GetAllUsersUseCase,
 } from './useCases'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { UserModelEntity } from '../configs/postgres/entities'
 
 const useCases = [CreateUserUseCase, GetAllUsersUseCase, DeleteUserByIdUseCase]
 
@@ -22,6 +24,7 @@ const useCases = [CreateUserUseCase, GetAllUsersUseCase, DeleteUserByIdUseCase]
         schema: UserSchema,
       },
     ]),
+    TypeOrmModule.forFeature([UserModelEntity]),
     CqrsModule,
   ],
   controllers: [UsersController],

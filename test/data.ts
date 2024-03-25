@@ -1,7 +1,6 @@
 import { CreateUserDto } from '../src/users'
-import { BasePostDto } from '../src/posts'
 import { BaseCommentDto } from '../src/comments'
-import { BaseBlogDto } from '../src/blogs'
+import { BaseBlogDto, BasePostDto } from '../src/blogs'
 
 interface IDefaultTestData {
   USER_DATA: CreateUserDto

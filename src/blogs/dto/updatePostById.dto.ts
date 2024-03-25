@@ -4,7 +4,12 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { validate } from 'uuid'
 import { PostsSqlRepository } from '../../posts'
 import { BlogsSqlRepository } from '../repositories'
@@ -36,7 +41,10 @@ class CustomBlogValidationParamById implements ValidatorConstraintInterface {
 @ValidatorConstraint({ async: true })
 @Injectable()
 class CustomPostValidationParamById implements ValidatorConstraintInterface {
-  constructor(private readonly postsSqlRepository: PostsSqlRepository) {}
+  constructor(
+    @Inject(forwardRef(() => PostsSqlRepository))
+    private readonly postsSqlRepository: PostsSqlRepository,
+  ) {}
 
   async validate(id: string) {
     if (!validate(id)) {

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { UserModelEntity } from './user.pg.entity.model'
 
 @Entity('confirmation')
 export class ConfirmationModelPgEntity {
@@ -14,6 +15,6 @@ export class ConfirmationModelPgEntity {
   @Column()
   isConfirmed: boolean
 
-  @Column({ type: 'uuid', unique: true })
-  userId: string
+  @ManyToOne(() => UserModelEntity, (user) => user.confirmation)
+  user: UserModelEntity
 }

@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { PostsService, PostsSqlRepository } from '../../posts'
 import { LikesSqlRepository } from '../../likes'
 import { GetBlogsRequestQuery } from '../interfaces'
+import { forwardRef, Inject } from '@nestjs/common'
 
 class GetPostsByBlogIdCommand {
   constructor(
@@ -18,8 +19,10 @@ class GetPostsByBlogIdUseCase
   implements ICommandHandler<GetPostsByBlogIdCommand>
 {
   constructor(
+    @Inject(forwardRef(() => PostsService))
     private readonly postsService: PostsService,
     private readonly likesSqlRepository: LikesSqlRepository,
+    @Inject(forwardRef(() => PostsSqlRepository))
     private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
 

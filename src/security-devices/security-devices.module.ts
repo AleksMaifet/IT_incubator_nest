@@ -21,6 +21,8 @@ import {
   GetRefreshTokenMetaUseCase,
   UpdateRefreshTokenMetaUseCase,
 } from './useCases'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { RefreshTokenMetaPgEntity } from '../configs/postgres/entities'
 
 const useCases = [
   CreateRefreshTokenMetaUseCase,
@@ -42,6 +44,7 @@ const useCases = [
         schema: RefreshTokenMetaSchema,
       },
     ]),
+    TypeOrmModule.forFeature([RefreshTokenMetaPgEntity]),
   ],
   controllers: [SecurityDevicesController],
   providers: [

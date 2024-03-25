@@ -2,6 +2,7 @@ import { Logger, Module } from '@nestjs/common'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { MongooseModule } from '@nestjs/mongoose'
 import { CqrsModule } from '@nestjs/cqrs'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { UserModel, UserSchema, UsersModule } from '../users'
 import { ManagerEmail } from '../managers'
 import { AdapterEmail } from '../adapters'
@@ -25,6 +26,7 @@ import {
   RegistrationEmailResendingUseCase,
   UpdateUserPasswordUseCase,
 } from './useCases'
+import { ConfirmationModelPgEntity } from '../configs/postgres/entities'
 
 const useCases = [
   CreateUserUseCase,
@@ -50,6 +52,7 @@ const useCases = [
         schema: UserSchema,
       },
     ]),
+    TypeOrmModule.forFeature([ConfirmationModelPgEntity]),
     ThrottlerModule.forRoot([
       {
         ttl: 10000,

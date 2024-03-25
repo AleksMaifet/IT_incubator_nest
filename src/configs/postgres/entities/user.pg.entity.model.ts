@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { ConfirmationModelPgEntity } from './confirmation.pg.entity.model'
+import { RefreshTokenMetaPgEntity } from './refreshTokenMeta.pg.entity.model'
 
 @Entity('users')
 export class UserModelEntity {
@@ -19,4 +21,10 @@ export class UserModelEntity {
 
   @Column()
   createdAt: Date
+
+  @OneToMany(() => ConfirmationModelPgEntity, (confirm) => confirm.user)
+  confirmation: ConfirmationModelPgEntity
+
+  @OneToMany(() => RefreshTokenMetaPgEntity, (confirm) => confirm.user)
+  refreshTokenMeta: RefreshTokenMetaPgEntity
 }
