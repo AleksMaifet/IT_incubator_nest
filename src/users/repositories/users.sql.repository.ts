@@ -25,13 +25,13 @@ class UsersSqlRepository {
 
     const queryBuilder = this.repository
       .createQueryBuilder('u')
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
       .where('LOWER(u.email) LIKE LOWER(:email)', {
         email: `%${searchEmailTerm}%`,
       })
       .orWhere('LOWER(u.login) LIKE LOWER(:login)', {
         login: `%${searchLoginTerm}%`,
       })
-      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
 
     const totalCount = await queryBuilder.getCount()
 
@@ -42,7 +42,10 @@ class UsersSqlRepository {
     })
 
     response.items = await queryBuilder
-      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .orderBy(
+        `"${sortBy}" COLLATE "C"`,
+        sortDirection.toUpperCase() as 'ASC' | 'DESC',
+      )
       .skip(skip)
       .take(pageSize)
       .getMany()
@@ -84,10 +87,10 @@ class UsersSqlRepository {
 
     const queryBuilder = this.repository
       .createQueryBuilder('u')
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
       .where('LOWER(u.email) LIKE LOWER(:email)', {
         email: `%${searchEmailTerm}%`,
       })
-      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
 
     const totalCount = await queryBuilder.getCount()
 
@@ -113,10 +116,10 @@ class UsersSqlRepository {
 
     const queryBuilder = this.repository
       .createQueryBuilder('u')
+      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
       .where('LOWER(u.login) LIKE LOWER(:login)', {
         login: `%${searchLoginTerm}%`,
       })
-      .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
 
     const totalCount = await queryBuilder.getCount()
 
@@ -180,8 +183,8 @@ class UsersSqlRepository {
   public async getById(id: string) {
     return await this.repository
       .createQueryBuilder('u')
-      .where('u.id = :id', { id })
       .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
+      .where('u.id = :id', { id })
       .getOne()
   }
 
