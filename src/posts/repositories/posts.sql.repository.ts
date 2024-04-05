@@ -118,8 +118,8 @@ class PostsSqlRepository {
       .addSelect('b.id', 'blogId')
       .addSelect('b.name', 'blogName')
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
-      .take(pageSize)
+      .offset(skip)
+      .limit(pageSize)
       .getRawMany()
 
     const items = []

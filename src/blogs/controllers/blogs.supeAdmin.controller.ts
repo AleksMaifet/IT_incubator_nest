@@ -87,6 +87,8 @@ export class BlogsSupeAdminController {
   ) {
     const result = await this.commandBus.execute(new GetBlogByIdCommand(id))
 
+    console.log(body)
+
     if (!result) {
       throw new NotFoundException({ message: 'blog is not exists' })
     }
@@ -123,7 +125,6 @@ export class BlogsSupeAdminController {
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updatePostById(
     @Param() param: UpdatePostByIdDto,
-    @User() user: IJwtUser,
     @Body() body: BasePostDto,
   ) {
     const { blogId, postId } = param
