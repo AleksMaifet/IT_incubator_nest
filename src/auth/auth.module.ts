@@ -26,7 +26,7 @@ import {
   RegistrationEmailResendingUseCase,
   UpdateUserPasswordUseCase,
 } from './useCases'
-import { ConfirmationModelPgEntity } from '../configs/postgres/entities'
+import { ConfirmationPgEntity } from '../configs/postgres/entities'
 
 const useCases = [
   CreateUserUseCase,
@@ -52,7 +52,7 @@ const useCases = [
         schema: UserSchema,
       },
     ]),
-    TypeOrmModule.forFeature([ConfirmationModelPgEntity]),
+    TypeOrmModule.forFeature([ConfirmationPgEntity]),
     ThrottlerModule.forRoot([
       {
         ttl: 10000,

@@ -19,11 +19,9 @@ class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   async execute(command: CreatePostCommand) {
     const { title, shortDescription, content, blogId } = command.payload
 
-    const { id, name } = await this.blogsSqlRepository.getById(blogId)
+    const newPost = new Post(title, shortDescription, content)
 
-    const newPost = new Post(title, shortDescription, content, id, name)
-
-    return await this.postsSqlRepository.create(newPost)
+    return await this.postsSqlRepository.create({ dto: newPost, blogId })
   }
 }
 

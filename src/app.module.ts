@@ -2,10 +2,11 @@ import { Logger, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { CqrsModule } from '@nestjs/cqrs'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { TestingModule } from './testing'
 import {
-  MongoDatabaseModule,
   JwtService,
+  MongoDatabaseModule,
   PostgresDatabaseModule,
 } from './configs'
 import {
@@ -50,6 +51,7 @@ import {
 } from './posts/useCases'
 import { LikesModule } from './likes'
 import { SecurityDevicesModule } from './security-devices/security-devices.module'
+import { BlogPgEntity, PostPgEntity } from './configs/postgres/entities'
 
 const useCases = [
   GetPostsByBlogIdUseCase,
@@ -83,6 +85,7 @@ const useCases = [
         schema: PostSchema,
       },
     ]),
+    TypeOrmModule.forFeature([BlogPgEntity, PostPgEntity]),
     AuthModule,
     UsersModule,
     TestingModule,

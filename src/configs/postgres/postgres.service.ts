@@ -3,11 +3,11 @@ import {
   BlogPgEntity,
   CommentLikePgEntity,
   CommentPgEntity,
-  ConfirmationModelPgEntity,
+  ConfirmationPgEntity,
   PostLikePgEntity,
   PostPgEntity,
   RefreshTokenMetaPgEntity,
-  UserModelEntity,
+  UserPgEntity,
 } from './entities'
 
 class PostgresService {
@@ -22,8 +22,8 @@ class PostgresService {
       password: this.configService.get('POSTGRES_DB_PASSWORD'),
       database: this.configService.get('POSTGRES_DB_NAME'),
       entities: [
-        UserModelEntity,
-        ConfirmationModelPgEntity,
+        UserPgEntity,
+        ConfirmationPgEntity,
         RefreshTokenMetaPgEntity,
         BlogPgEntity,
         PostPgEntity,

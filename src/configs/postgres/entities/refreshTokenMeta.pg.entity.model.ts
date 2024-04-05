@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { UserModelEntity } from './user.pg.entity.model'
+import { UserPgEntity } from './user.pg.entity.model'
 
 @Entity('refreshTokenMeta')
 export class RefreshTokenMetaPgEntity {
@@ -21,6 +21,6 @@ export class RefreshTokenMetaPgEntity {
   @Column()
   issuedAt: Date
 
-  @ManyToOne(() => UserModelEntity, (user) => user.confirmation)
-  user: UserModelEntity
+  @ManyToOne(() => UserPgEntity, (user) => user.confirmation)
+  user: UserPgEntity
 }

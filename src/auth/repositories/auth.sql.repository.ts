@@ -5,12 +5,12 @@ import {
   IEmailConfirmation,
   IPasswordRecoveryConfirmation,
 } from '../interfaces'
-import { ConfirmationModelPgEntity } from '../../configs/postgres/entities'
+import { ConfirmationPgEntity } from '../../configs/postgres/entities'
 
 class AuthSqlRepository {
   constructor(
-    @InjectRepository(ConfirmationModelPgEntity)
-    private readonly repository: Repository<ConfirmationModelPgEntity>,
+    @InjectRepository(ConfirmationPgEntity)
+    private readonly repository: Repository<ConfirmationPgEntity>,
   ) {}
 
   public async createEmailConfirmation(dto: IEmailConfirmation) {

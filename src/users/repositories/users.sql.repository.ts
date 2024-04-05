@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { GetUsersRequestQuery, IUser, IUsersResponse } from '../interfaces'
-import { UserModelEntity } from '../../configs/postgres/entities'
+import { UserPgEntity } from '../../configs/postgres/entities'
 
 @Injectable()
 class UsersSqlRepository {
   constructor(
-    @InjectRepository(UserModelEntity)
-    private readonly repository: Repository<UserModelEntity>,
+    @InjectRepository(UserPgEntity)
+    private readonly repository: Repository<UserPgEntity>,
   ) {}
 
   private async _getAllBySearchLoginOrEmailTerm(

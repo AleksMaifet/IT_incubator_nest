@@ -1,48 +1,42 @@
 import { Injectable } from '@nestjs/common'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { GetBlogsRequestQuery, IBlog, IBlogsResponse } from '../interfaces'
 import { UpdateBlogDto } from '../dto'
+import { BlogPgEntity } from '../../configs/postgres/entities'
 
 @Injectable()
 class BlogsSqlRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(BlogPgEntity)
+    private readonly repository: Repository<BlogPgEntity>,
+  ) {}
 
   private async _getAllBySearchNameTerm(dto: GetBlogsRequestQuery<number>) {
     const { searchNameTerm, sortBy, sortDirection, pageNumber, pageSize } = dto
 
-    const totalCountRequest = await this.dataSource.query(
-      `
-      SELECT count(*) FROM blogs
-      WHERE LOWER(name) LIKE LOWER($1)
-    `,
-      [`%${searchNameTerm}%`],
-    )
+    const queryBuilder = this.repository
+      .createQueryBuilder('b')
+      .where('LOWER(b.name) LIKE LOWER(:name)', {
+        name: `%${searchNameTerm}%`,
+      })
 
-    const { response } = this._createdFindOptionsAndResponse({
+    const totalCount = await queryBuilder.getCount()
+
+    const { response, skip } = this._createdResponse({
       pageNumber,
       pageSize,
-      totalCount: Number(totalCountRequest[0].count),
+      totalCount,
     })
 
-    // TODO think about sql injections
-    const query = `
-    SELECT * FROM blogs
-    WHERE LOWER(name) LIKE LOWER($1)
-    ORDER BY 
-        CASE 
-            WHEN ASCII(name) BETWEEN ASCII('A') AND ASCII('Z') THEN 1
-            ELSE 2
-        END,
-            "${sortBy}" ${sortDirection}
-    LIMIT $2 OFFSET $3;
-    `
-
-    response.items = await this.dataSource.query(query, [
-      `%${searchNameTerm}%`,
-      pageSize,
-      (pageNumber - 1) * pageSize,
-    ])
+    response.items = await queryBuilder
+      .orderBy(
+        `"${sortBy}" COLLATE "C"`,
+        sortDirection.toUpperCase() as 'ASC' | 'DESC',
+      )
+      .skip(skip)
+      .take(pageSize)
+      .getMany()
 
     return response
   }
@@ -52,32 +46,26 @@ class BlogsSqlRepository {
   ) {
     const { sortBy, sortDirection, pageNumber, pageSize } = dto
 
-    const totalCountRequest = await this.dataSource.query(`
-      SELECT count(*) FROM blogs
-    `)
+    const queryBuilder = this.repository.createQueryBuilder()
 
-    const { response } = this._createdFindOptionsAndResponse({
+    const totalCount = await queryBuilder.getCount()
+
+    const { response, skip } = this._createdResponse({
       pageNumber,
       pageSize,
-      totalCount: Number(totalCountRequest[0].count),
+      totalCount,
     })
 
-    // TODO think about sql injections
-    const query = `
-      SELECT * from blogs
-      ORDER BY "${sortBy}" ${sortDirection}
-      LIMIT $1 OFFSET $2;
-    `
-
-    response.items = await this.dataSource.query(query, [
-      pageSize,
-      (pageNumber - 1) * pageSize,
-    ])
+    response.items = await queryBuilder
+      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .skip(skip)
+      .take(pageSize)
+      .getMany()
 
     return response
   }
 
-  private _createdFindOptionsAndResponse<T>(
+  private _createdResponse<T>(
     dto: Pick<
       GetBlogsRequestQuery<number> & {
         totalCount: number
@@ -88,6 +76,7 @@ class BlogsSqlRepository {
     const { totalCount, pageNumber, pageSize } = dto
 
     const pagesCount = Math.ceil(totalCount / pageSize)
+    const skip = (pageNumber - 1) * pageSize
 
     const response: IBlogsResponse<T> = {
       pagesCount,
@@ -97,7 +86,7 @@ class BlogsSqlRepository {
       items: [],
     }
 
-    return { response }
+    return { response, skip }
   }
 
   public async getAll(dto: GetBlogsRequestQuery<number>) {
@@ -111,65 +100,40 @@ class BlogsSqlRepository {
   }
 
   public async getById(id: string) {
-    const result = await this.dataSource.query(
-      `
-       SELECT * from blogs
-       WHERE id = $1
-    `,
-      [id],
-    )
-
-    return result[0]
+    return await this.repository.findOneBy({ id })
   }
 
   public async updateById(id: string, dto: UpdateBlogDto) {
     const { name, description, websiteUrl } = dto
 
-    const query = `
-      UPDATE blogs
-      SET name = $2, description = $3, "websiteUrl" = $4
-      WHERE id = $1
-    `
+    const result = await this.repository.update(
+      { id },
+      {
+        name,
+        description,
+        websiteUrl,
+      },
+    )
 
-    const result = await this.dataSource.query(query, [
-      id,
-      name,
-      description,
-      websiteUrl,
-    ])
-
-    return result[1]
+    return result.affected
   }
 
   public async create(dto: IBlog) {
     const { name, description, websiteUrl, createdAt, isMembership } = dto
 
-    const query = `
-    INSERT INTO blogs (name, description, "websiteUrl", "createdAt", "isMembership")
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *
-    `
-
-    const result = await this.dataSource.query(query, [
+    return await this.repository.save({
       name,
       description,
       websiteUrl,
       createdAt,
       isMembership,
-    ])
-
-    return result[0]
+    })
   }
 
   public async deleteById(id: string) {
-    const query = `
-      DELETE from blogs
-      WHERE id = $1
-    `
+    const result = await this.repository.delete(id)
 
-    const result = await this.dataSource.query(query, [id])
-
-    return result[1]
+    return result.affected
   }
 }
 

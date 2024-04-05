@@ -12,7 +12,7 @@ import {
   GetAllUsersUseCase,
 } from './useCases'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { UserModelEntity } from '../configs/postgres/entities'
+import { UserPgEntity } from '../configs/postgres/entities'
 
 const useCases = [CreateUserUseCase, GetAllUsersUseCase, DeleteUserByIdUseCase]
 
@@ -24,7 +24,7 @@ const useCases = [CreateUserUseCase, GetAllUsersUseCase, DeleteUserByIdUseCase]
         schema: UserSchema,
       },
     ]),
-    TypeOrmModule.forFeature([UserModelEntity]),
+    TypeOrmModule.forFeature([UserPgEntity]),
     CqrsModule,
   ],
   controllers: [UsersController],

@@ -22,17 +22,9 @@ class CreatePostByBlogIdUseCase
     const { body, id } = command.payload
     const { title, shortDescription, content } = body
 
-    const blog = await this.blogsSqlRepository.getById(id)
+    const newPost = new Post(title, shortDescription, content)
 
-    const newPost = new Post(
-      title,
-      shortDescription,
-      content,
-      blog.id,
-      blog.name,
-    )
-
-    return await this.postsSqlRepository.create(newPost)
+    return await this.postsSqlRepository.create({ dto: newPost, blogId: id })
   }
 }
 

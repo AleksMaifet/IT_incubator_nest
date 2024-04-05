@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { BlogPgEntity } from './blog.pg.entity.model'
 
 @Entity('posts')
 export class PostPgEntity {
@@ -14,12 +15,6 @@ export class PostPgEntity {
   @Column()
   content: string
 
-  @Column({ type: 'uuid' })
-  blogId: string
-
-  @Column()
-  blogName: string
-
   @Column()
   createdAt: Date
 
@@ -28,4 +23,7 @@ export class PostPgEntity {
 
   @Column()
   dislikesCount: number
+
+  @ManyToOne(() => BlogPgEntity, (blog) => blog.post)
+  blog: BlogPgEntity
 }
