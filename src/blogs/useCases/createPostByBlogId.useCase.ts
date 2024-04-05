@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { forwardRef, Inject } from '@nestjs/common'
 import { Post, PostsSqlRepository } from '../../posts'
-import { BlogsSqlRepository } from '../repositories'
 import { BasePostDto } from '../dto'
 
 class CreatePostByBlogIdCommand {
@@ -13,7 +12,6 @@ class CreatePostByBlogIdUseCase
   implements ICommandHandler<CreatePostByBlogIdCommand>
 {
   constructor(
-    private readonly blogsSqlRepository: BlogsSqlRepository,
     @Inject(forwardRef(() => PostsSqlRepository))
     private readonly postsSqlRepository: PostsSqlRepository,
   ) {}
