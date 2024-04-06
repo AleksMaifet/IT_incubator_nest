@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
-import { PostPgEntity } from './post.pg.entity.model'
+import { PostPgEntity } from '../../posts/models/post.pg.entity.model'
 
 @Entity('blogs')
 export class BlogPgEntity {
@@ -22,5 +22,5 @@ export class BlogPgEntity {
   isMembership: boolean
 
   @OneToMany(() => PostPgEntity, (post) => post.blog)
-  post: PostPgEntity
+  post: PostPgEntity[]
 }

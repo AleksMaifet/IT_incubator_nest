@@ -5,8 +5,9 @@ import { Comment } from '../comment.entity'
 
 class CreateCommentByPostIdCommand {
   constructor(
-    public readonly payload: Pick<IComments, 'content' | 'commentatorInfo'> & {
+    public readonly payload: Pick<IComments, 'content'> & {
       postId: string
+      userId: string
     },
   ) {}
 }
@@ -18,11 +19,11 @@ class CreateCommentByPostIdUseCase
   constructor(private readonly commentsSqlRepository: CommentsSqlRepository) {}
 
   async execute(command: CreateCommentByPostIdCommand) {
-    const { postId, content, commentatorInfo } = command.payload
+    const { postId, content, userId } = command.payload
 
-    const newComment = new Comment(postId, content, commentatorInfo)
+    const newComment = new Comment(postId, content)
 
-    return await this.commentsSqlRepository.create(newComment)
+    return await this.commentsSqlRepository.create({ dto: newComment, userId })
   }
 }
 

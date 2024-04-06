@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Injectable } from '@nestjs/common'
-import { CommentModel } from '../comment.model'
+import { CommentModel } from '../models'
 import {
   GetCommentsRequestQuery,
   IComments,
@@ -48,12 +48,11 @@ class CommentsRepository {
   }
 
   private _mapGenerateCommentResponse(comment: IComments) {
-    const { id, content, commentatorInfo, createdAt, likesInfo } = comment
+    const { id, content, createdAt, likesInfo } = comment
 
     return {
       id,
       content,
-      commentatorInfo,
       createdAt,
       likesInfo,
     }

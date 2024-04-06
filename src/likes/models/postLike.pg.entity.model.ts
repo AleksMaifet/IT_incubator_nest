@@ -1,13 +1,13 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { LIKE_COMMENT_USER_STATUS_ENUM } from '../../../comments'
+import { LIKE_POST_USER_STATUS_ENUM } from '../../posts'
 
-@Entity('commentLike')
-export class CommentLikePgEntity {
+@Entity('postLike')
+export class PostLikePgEntity {
   @PrimaryGeneratedColumn()
   _id: string
 
   @Column({ type: 'uuid' })
-  commentId: string
+  postId: string
 
   @Column({ type: 'uuid' })
   userId: string
@@ -16,7 +16,7 @@ export class CommentLikePgEntity {
   userLogin: string
 
   @Column({ nullable: true })
-  status: LIKE_COMMENT_USER_STATUS_ENUM
+  status: LIKE_POST_USER_STATUS_ENUM
 
   @Column({ nullable: true })
   addedAt: Date

@@ -15,10 +15,6 @@ class Comment implements IComments {
   constructor(
     public postId: string,
     public content: string,
-    public commentatorInfo: {
-      userId: string
-      userLogin: string
-    },
   ) {
     this.createdAt = new Date()
     this.likesInfo = {

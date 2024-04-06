@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { IUser } from '../../users'
-import { CommentInfoLikeType, LikesSqlRepository } from '../../likes'
+import { LikesSqlRepository } from '../../likes'
 import { BaseCommentLikeDto } from '../dto'
 import { CommentsSqlRepository } from '../repositories'
 
@@ -29,23 +29,15 @@ class UpdateCommentLikeByIdUseCase
       user: { id, login },
     } = command.payload
 
-    const likeStatusComments = await this.likesSqlRepository.createCommentLike({
+    const commentLike = await this.likesSqlRepository.getOrCreateCommentLike({
       userId: id,
       userLogin: login,
       commentId,
     })
 
-    const isExist = likeStatusComments.findIndex(
-      (info: CommentInfoLikeType) =>
-        info.commentId === commentId && info.status === likeStatus,
-    )
+    const isExist = commentLike.status === likeStatus
 
-    if (isExist !== -1) return
-
-    const isFirst = likeStatusComments.findIndex(
-      (info: CommentInfoLikeType) =>
-        info.commentId === commentId && info.addedAt,
-    )
+    if (isExist) return
 
     await this.likesSqlRepository.updateUserCommentLikes({
       userId: id,
@@ -54,7 +46,7 @@ class UpdateCommentLikeByIdUseCase
     })
 
     return this.commentsSqlRepository.updateLikeWithStatusLikeOrDislike({
-      isFirstTime: isFirst === -1,
+      isFirstTime: !commentLike.addedAt,
       likeStatus,
       commentId,
     })

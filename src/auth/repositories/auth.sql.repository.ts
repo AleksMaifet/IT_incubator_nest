@@ -5,7 +5,7 @@ import {
   IEmailConfirmation,
   IPasswordRecoveryConfirmation,
 } from '../interfaces'
-import { ConfirmationPgEntity } from '../../configs/postgres/entities'
+import { ConfirmationPgEntity } from '../models'
 
 class AuthSqlRepository {
   constructor(

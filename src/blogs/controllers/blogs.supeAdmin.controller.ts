@@ -87,8 +87,6 @@ export class BlogsSupeAdminController {
   ) {
     const result = await this.commandBus.execute(new GetBlogByIdCommand(id))
 
-    console.log(body)
-
     if (!result) {
       throw new NotFoundException({ message: 'blog is not exists' })
     }

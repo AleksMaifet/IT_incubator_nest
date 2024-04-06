@@ -10,7 +10,6 @@ enum LIKE_POST_USER_STATUS_ENUM {
 }
 
 interface IUserPostLike {
-  addedAt: Date
   userId: string
   login: string
 }

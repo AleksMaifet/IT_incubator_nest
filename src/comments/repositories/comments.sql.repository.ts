@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
+import { LIKE_POST_USER_STATUS_ENUM } from '../../posts'
 import {
   GetCommentsRequestQuery,
   IComments,
@@ -8,12 +9,16 @@ import {
 } from '../interfaces'
 import { DEFAULTS_COMMENT_LIKE_STATUS } from '../constants'
 import { BaseCommentLikeDto } from '../dto'
+import { CommentPgEntity } from '../models'
 
 const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_COMMENT_LIKE_STATUS
 
 @Injectable()
 class CommentsSqlRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(CommentPgEntity)
+    private readonly repository: Repository<CommentPgEntity>,
+  ) {}
 
   private _mapGenerateCommentResponse(
     comment: Pick<IComments, 'id' | 'content' | 'createdAt'> & {
@@ -49,48 +54,58 @@ class CommentsSqlRepository {
     }
   }
 
-  public async create(dto: IComments) {
+  public async create({ dto, userId }: { dto: IComments; userId: string }) {
     const {
       postId,
       content,
-      commentatorInfo,
       createdAt,
       likesInfo: { likesCount, dislikesCount },
     } = dto
-    const { userId, userLogin } = commentatorInfo
 
-    const result = await this.dataSource.query(
-      `
-        INSERT INTO comments ("postId", content, "userId", "userLogin", "createdAt", "likesCount", "dislikesCount")
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING *
-    `,
-      [
-        postId,
-        content,
-        userId,
-        userLogin,
-        createdAt,
-        likesCount,
-        dislikesCount,
-      ],
-    )
+    const comment = await this.repository.save({
+      content,
+      createdAt,
+      likesCount,
+      dislikesCount,
+      user: { id: userId },
+      post: { id: postId },
+    })
 
-    return result.map(this._mapGenerateCommentResponse)[0]
+    const result = await this.repository
+      .createQueryBuilder('c')
+      .where('c.id = :id', { id: comment.id })
+      .leftJoin('c.user', 'u')
+      .select('c.id', 'id')
+      .addSelect('c.content', 'content')
+      .addSelect('c.createdAt', 'createdAt')
+      .addSelect('c.likesCount', 'likesCount')
+      .addSelect('c.dislikesCount', 'dislikesCount')
+      .addSelect('u.id', 'userId')
+      .addSelect('u.login', 'userLogin')
+      .getRawOne()
+
+    return this._mapGenerateCommentResponse(result)
   }
 
   public async getById(id: string) {
-    const query = `
-    SELECT * FROM comments
-    WHERE id = $1
-    `
-    const result = await this.dataSource.query(query, [id])
+    const result = await this.repository
+      .createQueryBuilder('c')
+      .where('c.id = :id', { id })
+      .leftJoin('c.user', 'u')
+      .select('c.id', 'id')
+      .addSelect('c.content', 'content')
+      .addSelect('c.createdAt', 'createdAt')
+      .addSelect('c.likesCount', 'likesCount')
+      .addSelect('c.dislikesCount', 'dislikesCount')
+      .addSelect('u.id', 'userId')
+      .addSelect('u.login', 'userLogin')
+      .getRawOne()
 
-    if (!result.length) {
+    if (!result) {
       return null
     }
 
-    return result.map(this._mapGenerateCommentResponse)[0]
+    return this._mapGenerateCommentResponse(result)
   }
 
   public async getAllByPostId(dto: {
@@ -100,15 +115,8 @@ class CommentsSqlRepository {
     const { postId, query: queryFromClient } = dto
     const { pageNumber, pageSize, sortBy, sortDirection } = queryFromClient
 
-    const totalCountRequest = await this.dataSource.query(
-      `
-      SELECT count(*) FROM comments
-      WHERE "postId" = $1
-    `,
-      [postId],
-    )
+    const totalCount = await this.repository.countBy({ post: { id: postId } })
 
-    const totalCount = Number(totalCountRequest[0].count)
     const pagesCount = Math.ceil(totalCount / pageSize)
     const skip = (pageNumber - 1) * pageSize
 
@@ -120,14 +128,21 @@ class CommentsSqlRepository {
       items: [],
     }
 
-    // TODO think about sql injections
-    const query = `
-    SELECT * FROM comments
-    WHERE "postId" = $1
-    ORDER BY "${sortBy}" ${sortDirection}
-    LIMIT $2 OFFSET $3;
-    `
-    const result = await this.dataSource.query(query, [postId, pageSize, skip])
+    const result = await this.repository
+      .createQueryBuilder('c')
+      .where('c.post.id = :postId', { postId })
+      .leftJoin('c.user', 'u')
+      .select('c.id', 'id')
+      .addSelect('c.content', 'content')
+      .addSelect('c.createdAt', 'createdAt')
+      .addSelect('c.likesCount', 'likesCount')
+      .addSelect('c.dislikesCount', 'dislikesCount')
+      .addSelect('u.id', 'userId')
+      .addSelect('u.login', 'userLogin')
+      .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
+      .skip(skip)
+      .limit(pageSize)
+      .getRawMany()
 
     response.items = result.map(this._mapGenerateCommentResponse)
 
@@ -137,26 +152,15 @@ class CommentsSqlRepository {
   public async updateById(dto: Pick<IComments, 'id' | 'content'>) {
     const { id, content } = dto
 
-    const query = `
-      UPDATE comments
-      SET content = $2
-      WHERE id = $1
-    `
+    const result = await this.repository.update({ id }, { content })
 
-    const result = await this.dataSource.query(query, [id, content])
-
-    return result[1]
+    return result.affected
   }
 
   public async deleteById(id: string) {
-    const query = `
-      DELETE from comments
-      WHERE id = $1
-    `
+    const result = await this.repository.delete({ id })
 
-    const result = await this.dataSource.query(query, [id])
-
-    return result[1]
+    return result.affected
   }
 
   public async updateLikeWithStatusLikeOrDislike(
@@ -167,30 +171,45 @@ class CommentsSqlRepository {
   ) {
     const { commentId, likeStatus, isFirstTime } = dto
 
-    const result = await this.dataSource.query(
-      `
-      UPDATE comments
-      SET
-        "likesCount" = CASE
-            WHEN $2 = 'None' THEN ${LIKES_COUNT}
-            WHEN $2 = 'Like' AND $3 THEN "likesCount" + 1
-            WHEN $2 = 'Like' AND NOT $3 THEN "likesCount" + 1
-            WHEN $2 = 'Dislike' AND NOT $3 THEN GREATEST("likesCount" - 1, ${LIKES_COUNT})
-      ELSE "likesCount"
-      END,
-        "dislikesCount" = CASE
-            WHEN $2 = 'None' THEN ${LIKES_COUNT}
-            WHEN $2 = 'Dislike' AND $3 THEN "dislikesCount" + 1
-            WHEN $2 = 'Dislike' AND NOT $3 THEN "dislikesCount" + 1
-            WHEN $2 = 'Like' AND NOT $3 THEN GREATEST("dislikesCount" - 1, ${DISLIKES_COUNT})
-      ELSE "dislikesCount"
-      END
-      WHERE id = $1
-    `,
-      [commentId, likeStatus, isFirstTime],
-    )
+    const result = await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        likesCount: () => {
+          switch (likeStatus as string) {
+            case LIKE_POST_USER_STATUS_ENUM.None:
+              return `${LIKES_COUNT}`
+            case LIKE_POST_USER_STATUS_ENUM.Like:
+              return 'likesCount + 1'
+            case LIKE_POST_USER_STATUS_ENUM.Dislike:
+              if (isFirstTime) {
+                return 'likesCount'
+              }
+              return 'GREATEST(likesCount - 1, 0)'
+            default:
+              return 'likesCount'
+          }
+        },
+        dislikesCount: () => {
+          switch (likeStatus as string) {
+            case LIKE_POST_USER_STATUS_ENUM.None:
+              return `${DISLIKES_COUNT}`
+            case LIKE_POST_USER_STATUS_ENUM.Dislike:
+              return 'dislikesCount + 1'
+            case LIKE_POST_USER_STATUS_ENUM.Like:
+              if (isFirstTime) {
+                return 'dislikesCount'
+              }
+              return 'GREATEST(dislikesCount - 1, 0)'
+            default:
+              return 'dislikesCount'
+          }
+        },
+      })
+      .where('id = :commentId', { commentId })
+      .execute()
 
-    return result[1]
+    return result.affected
   }
 }
 

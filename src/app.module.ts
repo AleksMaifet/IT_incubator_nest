@@ -12,6 +12,7 @@ import {
 import {
   CustomPostValidationByBlogId,
   PostModel,
+  PostPgEntity,
   PostSchema,
   PostsController,
   PostsRepository,
@@ -20,6 +21,7 @@ import {
 } from './posts'
 import {
   BlogModel,
+  BlogPgEntity,
   BlogSchema,
   BlogsController,
   BlogsRepository,
@@ -29,8 +31,10 @@ import {
   CustomPostValidationParamById,
 } from './blogs'
 import { CommentsModule } from './comments'
-import { AuthModule } from './auth/auth.module'
+import { AuthModule } from './auth'
 import { UsersModule } from './users'
+import { SecurityDevicesModule } from './security-devices'
+import { LikesModule } from './likes'
 import { AccessTokenStrategy, BasicStrategy } from './libs/strategies'
 import {
   CreateBlogUseCase,
@@ -49,9 +53,6 @@ import {
   UpdatePostByIdUseCase,
   UpdatePostLikeByIdUseCase,
 } from './posts/useCases'
-import { LikesModule } from './likes'
-import { SecurityDevicesModule } from './security-devices/security-devices.module'
-import { BlogPgEntity, PostPgEntity } from './configs/postgres/entities'
 
 const useCases = [
   GetPostsByBlogIdUseCase,

@@ -1,6 +1,6 @@
 export * from './controllers'
 export * from './repositories'
-export * from './blog.model'
+export * from './models'
 export * from './blog.entity'
 export * from './dto'
 export * from './constants'

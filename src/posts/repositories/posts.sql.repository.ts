@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
-import { DataSource, Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import {
   GetPostsRequestQuery,
   IPost,
@@ -9,16 +9,18 @@ import {
 } from '../interfaces'
 import { BasePostLikeDto, UpdatePostDto } from '../dto'
 import { DEFAULTS_POST_LIKE_STATUS } from '../constants'
-import { PostPgEntity } from '../../configs/postgres/entities'
+import { PostPgEntity } from '../models'
+import { PostLikePgEntity } from '../../likes'
 
 const { LIKES_COUNT, DISLIKES_COUNT, MY_STATUS } = DEFAULTS_POST_LIKE_STATUS
 
 @Injectable()
 class PostsSqlRepository {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(PostPgEntity)
-    private readonly repository: Repository<PostPgEntity>,
+    private readonly postRepository: Repository<PostPgEntity>,
+    @InjectRepository(PostLikePgEntity)
+    private readonly postLikeRepository: Repository<PostLikePgEntity>,
   ) {}
 
   private async _mapGeneratePostResponse(
@@ -44,14 +46,16 @@ class PostsSqlRepository {
       dislikesCount,
     } = post
 
-    const newestLikes = await this.dataSource.query(
-      `
-      SELECT "addedAt", "userId", "userLogin" AS login FROM "postLike"
-      WHERE status = $1 AND "postId" = $2
-      ORDER BY "addedAt" DESC LIMIT 3
-    `,
-      [LIKE_POST_USER_STATUS_ENUM.Like, id],
-    )
+    const newestLikes = await this.postLikeRepository
+      .createQueryBuilder()
+      .where('"postId" = :id', { id })
+      .andWhere('status = :status', { status: LIKE_POST_USER_STATUS_ENUM.Like })
+      .select('"addedAt"', 'addedAt')
+      .addSelect('"userId"', 'userId')
+      .addSelect('"userLogin"', 'login')
+      .orderBy('"addedAt"', 'DESC')
+      .limit(3)
+      .getRawMany()
 
     return {
       id,
@@ -97,7 +101,7 @@ class PostsSqlRepository {
   public async getAll(dto: GetPostsRequestQuery<number>) {
     const { sortBy, sortDirection, pageNumber, pageSize } = dto
 
-    const totalCount = await this.repository.count()
+    const totalCount = await this.postRepository.count()
 
     const { response, skip } = this._createdResponse({
       pageNumber,
@@ -105,7 +109,7 @@ class PostsSqlRepository {
       totalCount,
     })
 
-    const result = await this.repository
+    const result = await this.postRepository
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
       .select('p.id', 'id')
@@ -118,7 +122,7 @@ class PostsSqlRepository {
       .addSelect('b.id', 'blogId')
       .addSelect('b.name', 'blogName')
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .offset(skip)
+      .skip(skip)
       .limit(pageSize)
       .getRawMany()
 
@@ -137,7 +141,7 @@ class PostsSqlRepository {
   public async getPostsByBlogId(id: string, dto: GetPostsRequestQuery<number>) {
     const { pageSize, pageNumber, sortDirection, sortBy } = dto
 
-    const totalCount = await this.repository.countBy({ blog: { id } })
+    const totalCount = await this.postRepository.countBy({ blog: { id } })
 
     const { response, skip } = this._createdResponse({
       pageNumber,
@@ -145,7 +149,7 @@ class PostsSqlRepository {
       totalCount,
     })
 
-    const result = await this.repository
+    const result = await this.postRepository
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
       .select('p.id', 'id')
@@ -159,7 +163,7 @@ class PostsSqlRepository {
       .addSelect('p.dislikesCount', 'dislikesCount')
       .where('p.blog.id = :id', { id })
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .offset(skip)
+      .skip(skip)
       .limit(pageSize)
       .getRawMany()
 
@@ -177,7 +181,7 @@ class PostsSqlRepository {
   }
 
   public async getById(id: string) {
-    const result = await this.repository
+    const result = await this.postRepository
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
       .select('p.id', 'id')
@@ -193,7 +197,7 @@ class PostsSqlRepository {
       .getRawOne()
 
     if (!result) {
-      return result
+      return null
     }
 
     return await this._mapGeneratePostResponse({
@@ -204,7 +208,7 @@ class PostsSqlRepository {
   public async updateById(id: string, dto: UpdatePostDto) {
     const { title, shortDescription, content, blogId } = dto
 
-    const result = await this.repository.update(
+    const result = await this.postRepository.update(
       { id },
       {
         title,
@@ -226,7 +230,7 @@ class PostsSqlRepository {
       extendedLikesInfo: { likesCount, dislikesCount },
     } = dto
 
-    const post = await this.repository.save({
+    const post = await this.postRepository.save({
       title,
       shortDescription,
       content,
@@ -236,7 +240,7 @@ class PostsSqlRepository {
       blog: { id: blogId },
     })
 
-    const result = await this.repository
+    const result = await this.postRepository
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
       .select('p.id', 'id')
@@ -257,7 +261,7 @@ class PostsSqlRepository {
   }
 
   public async deleteById(id: string) {
-    const result = await this.repository.delete({ id })
+    const result = await this.postRepository.delete({ id })
 
     return result.affected
   }
@@ -270,7 +274,7 @@ class PostsSqlRepository {
   ) {
     const { postId, likeStatus, isFirstTime } = dto
 
-    const result = await this.repository
+    const result = await this.postRepository
       .createQueryBuilder()
       .update()
       .set({

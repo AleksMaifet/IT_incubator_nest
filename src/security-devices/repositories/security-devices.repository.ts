@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Injectable } from '@nestjs/common'
 import { Model } from 'mongoose'
 import { IRefreshTokenMeta } from '../interface'
-import { RefreshTokenMetaModel } from '../refresh-token-meta.model'
+import { RefreshTokenMetaModel } from '../models'
 
 @Injectable()
 class SecurityDevicesRepository {

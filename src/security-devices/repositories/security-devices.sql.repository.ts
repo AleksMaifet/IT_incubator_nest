@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { IRefreshTokenMeta } from '../interface'
-import { RefreshTokenMetaPgEntity } from '../../configs/postgres/entities'
+import { RefreshTokenMetaPgEntity } from '../models'
 
 @Injectable()
 class SecurityDevicesSqlRepository {

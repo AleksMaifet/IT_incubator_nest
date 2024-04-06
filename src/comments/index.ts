@@ -1,6 +1,6 @@
 export * from './dto'
 export * from './comment.entity'
-export * from './comment.model'
+export * from './models'
 export * from './comments.module'
 export * from './comments.controller'
 export * from './repositories'

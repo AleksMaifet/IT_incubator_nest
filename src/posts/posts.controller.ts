@@ -136,7 +136,7 @@ export class PostsController {
     @User() user: IJwtUser,
     @Body() body: BaseCommentDto,
   ) {
-    const { userId, login } = user
+    const { userId } = user
 
     const result = await this.commandBus.execute(
       new GetPostByIdCommand({
@@ -155,10 +155,7 @@ export class PostsController {
       new CreateCommentByPostIdCommand({
         postId: id,
         content,
-        commentatorInfo: {
-          userId,
-          userLogin: login,
-        },
+        userId,
       }),
     )
   }

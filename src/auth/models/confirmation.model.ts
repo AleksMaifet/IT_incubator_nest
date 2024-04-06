@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
-import { IEmailConfirmation } from './interfaces'
+import { IEmailConfirmation } from '../interfaces'
 
 @Schema({
   versionKey: false,

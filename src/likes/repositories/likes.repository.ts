@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { Model } from 'mongoose'
 import { BaseCommentLikeDto } from '../../comments'
 import { BasePostLikeDto } from '../../posts'
-import { LikeModel } from '../like.model'
+import { LikeModel } from '../models'
 import { ILikes } from '../interfaces'
 
 @Injectable()

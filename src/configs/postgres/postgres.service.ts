@@ -1,36 +1,18 @@
 import { ConfigService } from '@nestjs/config'
-import {
-  BlogPgEntity,
-  CommentLikePgEntity,
-  CommentPgEntity,
-  ConfirmationPgEntity,
-  PostLikePgEntity,
-  PostPgEntity,
-  RefreshTokenMetaPgEntity,
-  UserPgEntity,
-} from './entities'
+import { TypeOrmModuleOptions } from '@nestjs/typeorm/dist/interfaces/typeorm-options.interface'
 
 class PostgresService {
   constructor(private readonly configService: ConfigService) {}
 
-  public async getConfig() {
+  public async getConfig(): Promise<TypeOrmModuleOptions> {
     return {
-      type: this.configService.get('POSTGRES_DB_TYPE'),
+      type: 'postgres',
       host: this.configService.get('POSTGRES_DB_HOST'),
       port: this.configService.get('POSTGRES_DB_PORT'),
       username: this.configService.get('POSTGRES_DB_USER'),
       password: this.configService.get('POSTGRES_DB_PASSWORD'),
       database: this.configService.get('POSTGRES_DB_NAME'),
-      entities: [
-        UserPgEntity,
-        ConfirmationPgEntity,
-        RefreshTokenMetaPgEntity,
-        BlogPgEntity,
-        PostPgEntity,
-        PostLikePgEntity,
-        CommentPgEntity,
-        CommentLikePgEntity,
-      ],
+      autoLoadEntities: true,
       synchronize: true,
       ssl: this.configService.get('POSTGRES_SSL') === 'true',
     }

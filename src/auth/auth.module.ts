@@ -8,9 +8,13 @@ import { ManagerEmail } from '../managers'
 import { AdapterEmail } from '../adapters'
 import { JwtService } from '../configs'
 import { RefreshTokenStrategy } from '../libs/strategies'
-import { SecurityDevicesModule } from '../security-devices/security-devices.module'
+import { SecurityDevicesModule } from '../security-devices'
 import { AuthController } from './auth.controller'
-import { ConfirmationModel, ConfirmationSchema } from './confirmation.model'
+import {
+  ConfirmationModel,
+  ConfirmationSchema,
+  ConfirmationPgEntity,
+} from './models'
 import { AuthRepository, AuthSqlRepository } from './repositories'
 import {
   CustomRegEmailValidation,
@@ -26,7 +30,6 @@ import {
   RegistrationEmailResendingUseCase,
   UpdateUserPasswordUseCase,
 } from './useCases'
-import { ConfirmationPgEntity } from '../configs/postgres/entities'
 
 const useCases = [
   CreateUserUseCase,

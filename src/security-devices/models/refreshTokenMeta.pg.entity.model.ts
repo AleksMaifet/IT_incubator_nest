@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { UserPgEntity } from './user.pg.entity.model'
+import { UserPgEntity } from '../../users'
 
 @Entity('refreshTokenMeta')
 export class RefreshTokenMetaPgEntity {

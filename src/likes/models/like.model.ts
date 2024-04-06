@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose'
-import { ILikes } from './interfaces'
-import { LIKE_POST_USER_STATUS_ENUM } from '../posts'
-import { LIKE_COMMENT_USER_STATUS_ENUM } from '../comments'
+import { ILikes } from '../interfaces'
+import { LIKE_POST_USER_STATUS_ENUM } from '../../posts'
+import { LIKE_COMMENT_USER_STATUS_ENUM } from '../../comments'
 
 @Schema({
   versionKey: false,

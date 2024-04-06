@@ -1,6 +1,7 @@
 import { MongooseModule } from '@nestjs/mongoose'
 import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { SecurityDevicesService } from './security-devices.service'
 import { SecurityDevicesController } from './security-devices.controller'
 import {
@@ -9,8 +10,9 @@ import {
 } from './repositories'
 import {
   RefreshTokenMetaModel,
+  RefreshTokenMetaPgEntity,
   RefreshTokenMetaSchema,
-} from './refresh-token-meta.model'
+} from './models'
 import {
   CreateRefreshTokenMetaUseCase,
   DeleteAllDevicesUseCase,
@@ -21,8 +23,6 @@ import {
   GetRefreshTokenMetaUseCase,
   UpdateRefreshTokenMetaUseCase,
 } from './useCases'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { RefreshTokenMetaPgEntity } from '../configs/postgres/entities'
 
 const useCases = [
   CreateRefreshTokenMetaUseCase,

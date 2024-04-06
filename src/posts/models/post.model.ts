@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
-import { IPost, IUserPostLike, LIKE_POST_USER_STATUS_ENUM } from './interfaces'
+import { IPost, IUserPostLike, LIKE_POST_USER_STATUS_ENUM } from '../interfaces'
 
 @Schema({
   versionKey: false,

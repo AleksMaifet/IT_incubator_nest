@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { BlogPgEntity } from './blog.pg.entity.model'
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
+import { BlogPgEntity } from '../../blogs/models/blog.pg.entity.model'
+import { CommentPgEntity } from '../../comments/models/comment.pg.entity.model'
 
 @Entity('posts')
 export class PostPgEntity {
@@ -26,4 +33,7 @@ export class PostPgEntity {
 
   @ManyToOne(() => BlogPgEntity, (blog) => blog.post)
   blog: BlogPgEntity
+
+  @OneToMany(() => CommentPgEntity, (comment) => comment.post)
+  comment: CommentPgEntity[]
 }

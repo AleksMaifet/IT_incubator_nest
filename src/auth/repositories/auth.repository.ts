@@ -6,7 +6,7 @@ import {
   IEmailConfirmation,
   IPasswordRecoveryConfirmation,
 } from '../interfaces'
-import { ConfirmationModel } from '../confirmation.model'
+import { ConfirmationModel } from '../models'
 
 @Injectable()
 class AuthRepository {

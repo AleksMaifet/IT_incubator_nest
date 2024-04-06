@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
-import { ConfirmationPgEntity } from './confirmation.pg.entity.model'
-import { RefreshTokenMetaPgEntity } from './refreshTokenMeta.pg.entity.model'
+import { ConfirmationPgEntity } from '../../auth/models/confirmation.pg.entity.model'
+import { RefreshTokenMetaPgEntity } from '../../security-devices'
+import { CommentPgEntity } from '../../comments/models/comment.pg.entity.model'
 
 @Entity('users')
 export class UserPgEntity {
@@ -23,8 +24,11 @@ export class UserPgEntity {
   createdAt: Date
 
   @OneToMany(() => ConfirmationPgEntity, (confirm) => confirm.user)
-  confirmation: ConfirmationPgEntity
+  confirmation: ConfirmationPgEntity[]
 
   @OneToMany(() => RefreshTokenMetaPgEntity, (confirm) => confirm.user)
-  refreshTokenMeta: RefreshTokenMetaPgEntity
+  refreshTokenMeta: RefreshTokenMetaPgEntity[]
+
+  @OneToMany(() => CommentPgEntity, (comment) => comment.user)
+  comment: CommentPgEntity[]
 }

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
-import { IBlog } from './interfaces'
+import { IBlog } from '../interfaces'
 
 @Schema({
   versionKey: false,

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose'
-import { IRefreshTokenMeta } from './interface'
+import { IRefreshTokenMeta } from '../interface'
 
 @Schema({
   versionKey: false,

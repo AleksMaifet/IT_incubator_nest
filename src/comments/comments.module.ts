@@ -1,11 +1,12 @@
 import { Logger, Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { CqrsModule } from '@nestjs/cqrs'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { LikesModule } from '../likes'
 import { JwtService } from '../configs'
 import { CommentsController } from './comments.controller'
 import { CommentsRepository, CommentsSqlRepository } from './repositories'
-import { CommentModel, CommentSchema } from './comment.model'
+import { CommentModel, CommentSchema, CommentPgEntity } from './models'
 import {
   CreateCommentByPostIdUseCase,
   DeleteCommentByIdUseCase,
@@ -34,6 +35,7 @@ const useCases = [
         schema: CommentSchema,
       },
     ]),
+    TypeOrmModule.forFeature([CommentPgEntity]),
   ],
   controllers: [CommentsController],
   providers: [

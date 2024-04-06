@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { GetBlogsRequestQuery, IBlog, IBlogsResponse } from '../interfaces'
 import { UpdateBlogDto } from '../dto'
-import { BlogPgEntity } from '../../configs/postgres/entities'
+import { BlogPgEntity } from '../models'
 
 @Injectable()
 class BlogsSqlRepository {

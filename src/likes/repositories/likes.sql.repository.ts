@@ -1,13 +1,19 @@
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { IsNull, Not, Repository } from 'typeorm'
 import { BasePostLikeDto } from '../../posts'
-import { CommentInfoLikeType, PostInfoLikeType } from '../interfaces'
 import { BaseCommentLikeDto } from '../../comments'
+import { CommentLikePgEntity, PostLikePgEntity } from '../models'
+import { CommentInfoLikeType, PostInfoLikeType } from '../interfaces'
 
 class LikesSqlRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(PostLikePgEntity)
+    private readonly postLikeRepository: Repository<PostLikePgEntity>,
+    @InjectRepository(CommentLikePgEntity)
+    private readonly commentLikeRepository: Repository<CommentLikePgEntity>,
+  ) {}
 
-  public async createPostLike(
+  public async getOrCreatePostLike(
     dto: {
       userId: string
       userLogin: string
@@ -15,62 +21,37 @@ class LikesSqlRepository {
   ) {
     const { userId, userLogin, postId } = dto
 
-    let result
+    const result = await this.postLikeRepository.findOneBy({
+      userId,
+      postId,
+      addedAt: Not(IsNull()),
+    })
 
-    result = await this.dataSource.query(
-      `
-        SELECT * FROM "postLike"
-        WHERE "userId" = $1 AND "postId" = $2 AND "addedAt" IS NOT NULL
-    `,
-      [userId, postId],
-    )
-
-    if (!result[0]) {
-      result = await this.dataSource.query(
-        `
-            INSERT INTO "postLike" ("userId", "userLogin", "postId")
-            VALUES ($1, $2, $3)
-            RETURNING *
-    `,
-        [userId, userLogin, postId],
-      )
+    if (!result) {
+      return await this.postLikeRepository.save({ userId, userLogin, postId })
     }
 
-    return result.map(({ status, postId, addedAt }) => ({
-      status,
-      postId,
-      addedAt,
-    }))
+    return result
   }
 
   public async getPostLikesByUserId(userId: string) {
-    return await this.dataSource.query(
-      `
-      SELECT * FROM "postLike"
-      WHERE "userId" = $1
-    `,
-      [userId],
-    )
+    return await this.postLikeRepository.findBy({ userId })
   }
 
   public async updateUserPostLikes(
-    dto: { postId: string; userId: string; addedAt: Date } & BasePostLikeDto,
+    dto: { postId: string; userId: string } & BasePostLikeDto,
   ) {
-    const { postId, userId, likeStatus, addedAt } = dto
+    const { postId, userId, likeStatus } = dto
 
-    const result = await this.dataSource.query(
-      `
-     UPDATE "postLike"
-     SET "status" = $3, "addedAt" = $4
-     WHERE "userId" = $1 AND "postId" = $2
-     `,
-      [userId, postId, likeStatus, addedAt],
+    const result = await this.postLikeRepository.update(
+      { userId, postId },
+      { status: likeStatus, addedAt: new Date() },
     )
 
-    return result[1]
+    return result.affected
   }
 
-  public async createCommentLike(
+  public async getOrCreateCommentLike(
     dto: {
       userId: string
       userLogin: string
@@ -78,42 +59,25 @@ class LikesSqlRepository {
   ) {
     const { userId, userLogin, commentId } = dto
 
-    let result
+    const result = await this.commentLikeRepository.findOneBy({
+      userId,
+      commentId,
+      addedAt: Not(IsNull()),
+    })
 
-    result = await this.dataSource.query(
-      `
-        SELECT * FROM "commentLike"
-        WHERE "userId" = $1 AND "commentId" = $2 AND "addedAt" IS NOT NULL
-    `,
-      [userId, commentId],
-    )
-
-    if (!result[0]) {
-      result = await this.dataSource.query(
-        `
-            INSERT INTO "commentLike" ("userId", "userLogin", "commentId")
-            VALUES ($1, $2, $3)
-            RETURNING *
-    `,
-        [userId, userLogin, commentId],
-      )
+    if (!result) {
+      return await this.commentLikeRepository.save({
+        userId,
+        userLogin,
+        commentId,
+      })
     }
 
-    return result.map(({ status, commentId, addedAt }) => ({
-      status,
-      commentId,
-      addedAt,
-    }))
+    return result
   }
 
   public async getCommentLikesByUserId(userId: string) {
-    return await this.dataSource.query(
-      `
-      SELECT * FROM "commentLike"
-      WHERE "userId" = $1
-    `,
-      [userId],
-    )
+    return await this.commentLikeRepository.findBy({ userId })
   }
 
   public async updateUserCommentLikes(
@@ -121,16 +85,12 @@ class LikesSqlRepository {
   ) {
     const { commentId, userId, likeStatus } = dto
 
-    const result = await this.dataSource.query(
-      `
-     UPDATE "commentLike"
-     SET "status" = $3, "addedAt" = $4
-     WHERE "userId" = $1 AND "commentId" = $2
-     `,
-      [userId, commentId, likeStatus, new Date()],
+    const result = await this.commentLikeRepository.update(
+      { userId, commentId },
+      { status: likeStatus, addedAt: new Date() },
     )
 
-    return result[1]
+    return result.affected
   }
 }
 

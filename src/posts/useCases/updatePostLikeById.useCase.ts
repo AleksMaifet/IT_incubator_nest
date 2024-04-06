@@ -1,12 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { forwardRef, Inject } from '@nestjs/common'
-import {
-  BasePostLikeDto,
-  PostsSqlRepository,
-  UserLikeInfoEntity,
-} from '../../posts'
+import { BasePostLikeDto, PostsSqlRepository } from '../../posts'
 import { IUser } from '../../users'
-import { LikesSqlRepository, PostInfoLikeType } from '../../likes'
+import { LikesSqlRepository } from '../../likes'
 
 class UpdatePostLikeByIdCommand {
   constructor(
@@ -34,38 +30,24 @@ class UpdatePostLikeByIdUseCase
       user: { id, login },
     } = command.payload
 
-    const {
-      userId,
-      login: userLogin,
-      addedAt,
-    } = new UserLikeInfoEntity(id, login)
-
-    const likeStatusPosts = await this.likesSqlRepository.createPostLike({
-      userId,
-      userLogin,
+    const postsLike = await this.likesSqlRepository.getOrCreatePostLike({
+      userId: id,
+      userLogin: login,
       postId,
     })
 
-    const isExist = likeStatusPosts.findIndex(
-      (info: PostInfoLikeType) =>
-        info.postId === postId && info.status === likeStatus,
-    )
+    const isExist = postsLike.status === likeStatus
 
-    if (isExist !== -1) return
-
-    const isFirst = likeStatusPosts.findIndex(
-      (info: PostInfoLikeType) => info.postId === postId && info.addedAt,
-    )
+    if (isExist) return
 
     await this.likesSqlRepository.updateUserPostLikes({
-      userId,
+      userId: id,
       likeStatus,
       postId,
-      addedAt,
     })
 
     return await this.postsSqlRepository.updateLikeWithStatusLikeOrDislike({
-      isFirstTime: isFirst === -1,
+      isFirstTime: !postsLike.addedAt,
       likeStatus,
       postId,
     })
