@@ -130,7 +130,6 @@ class CommentsSqlRepository {
 
     const result = await this.repository
       .createQueryBuilder('c')
-      .where('c.post.id = :postId', { postId })
       .leftJoin('c.user', 'u')
       .select('c.id', 'id')
       .addSelect('c.content', 'content')
@@ -139,6 +138,7 @@ class CommentsSqlRepository {
       .addSelect('c.dislikesCount', 'dislikesCount')
       .addSelect('u.id', 'userId')
       .addSelect('u.login', 'userLogin')
+      .where('c.post.id = :postId', { postId })
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
       .skip(skip)
       .limit(pageSize)
