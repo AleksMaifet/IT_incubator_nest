@@ -46,7 +46,7 @@ class UsersSqlRepository {
         `"${sortBy}" COLLATE "C"`,
         sortDirection.toUpperCase() as 'ASC' | 'DESC',
       )
-      .skip(skip)
+      .offset(skip)
       .take(pageSize)
       .getMany()
 
@@ -73,7 +73,7 @@ class UsersSqlRepository {
       .createQueryBuilder('u')
       .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .take(pageSize)
       .getMany()
 
@@ -102,7 +102,7 @@ class UsersSqlRepository {
 
     response.items = await queryBuilder
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .take(pageSize)
       .getMany()
 
@@ -131,7 +131,7 @@ class UsersSqlRepository {
 
     response.items = await queryBuilder
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .take(pageSize)
       .getMany()
 

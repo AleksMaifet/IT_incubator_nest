@@ -34,7 +34,7 @@ class BlogsSqlRepository {
         `"${sortBy}" COLLATE "C"`,
         sortDirection.toUpperCase() as 'ASC' | 'DESC',
       )
-      .skip(skip)
+      .offset(skip)
       .take(pageSize)
       .getMany()
 
@@ -58,7 +58,7 @@ class BlogsSqlRepository {
 
     response.items = await queryBuilder
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .take(pageSize)
       .getMany()
 
