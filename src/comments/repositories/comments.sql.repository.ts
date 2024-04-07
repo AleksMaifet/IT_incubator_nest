@@ -140,7 +140,7 @@ class CommentsSqlRepository {
       .addSelect('u.login', 'userLogin')
       .where('c.post.id = :postId', { postId })
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .limit(pageSize)
       .getRawMany()
 
