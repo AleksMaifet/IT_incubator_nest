@@ -47,7 +47,7 @@ class UsersSqlRepository {
         sortDirection.toUpperCase() as 'ASC' | 'DESC',
       )
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getMany()
 
     return response
@@ -74,7 +74,7 @@ class UsersSqlRepository {
       .select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getMany()
 
     return response
@@ -103,7 +103,7 @@ class UsersSqlRepository {
     response.items = await queryBuilder
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getMany()
 
     return response
@@ -132,7 +132,7 @@ class UsersSqlRepository {
     response.items = await queryBuilder
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getMany()
 
     return response

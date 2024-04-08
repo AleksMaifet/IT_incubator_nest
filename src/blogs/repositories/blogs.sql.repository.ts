@@ -35,7 +35,7 @@ class BlogsSqlRepository {
         sortDirection.toUpperCase() as 'ASC' | 'DESC',
       )
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getMany()
 
     return response
@@ -59,7 +59,7 @@ class BlogsSqlRepository {
     response.items = await queryBuilder
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getMany()
 
     return response

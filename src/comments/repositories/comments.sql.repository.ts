@@ -141,7 +141,7 @@ class CommentsSqlRepository {
       .where('c.post.id = :postId', { postId })
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
       .offset(skip)
-      .take(pageSize)
+      .limit(pageSize)
       .getRawMany()
 
     response.items = result.map(this._mapGenerateCommentResponse)
