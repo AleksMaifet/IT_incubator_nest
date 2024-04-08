@@ -122,7 +122,7 @@ class PostsSqlRepository {
       .addSelect('b.id', 'blogId')
       .addSelect('b.name', 'blogName')
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .limit(pageSize)
       .getRawMany()
 
@@ -163,7 +163,7 @@ class PostsSqlRepository {
       .addSelect('p.dislikesCount', 'dislikesCount')
       .where('p.blog.id = :id', { id })
       .orderBy(`"${sortBy}"`, sortDirection.toUpperCase() as 'ASC' | 'DESC')
-      .skip(skip)
+      .offset(skip)
       .limit(pageSize)
       .getRawMany()
 
