@@ -8,20 +8,20 @@ import {
 @Entity('quizQuestions')
 export class QuizQuestionEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  public id: string
 
   @Column({ nullable: true })
-  body: string
+  public body: string
 
   @Column('json', { nullable: true })
-  correctAnswers: string[]
+  public correctAnswers: string[]
 
   @Column({ default: false })
-  published: boolean
+  public published: boolean
 
   @CreateDateColumn({ nullable: true })
-  createdAt: string
+  public createdAt: string
 
   @Column({ nullable: true })
-  updatedAt: string
+  public updatedAt: string
 }

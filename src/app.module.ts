@@ -54,6 +54,7 @@ import {
   UpdatePostByIdUseCase,
   UpdatePostLikeByIdUseCase,
 } from './posts/useCases'
+import { PairQuizGameModule } from './pair-quiz-game/pairQuizGame.module'
 
 const useCases = [
   GetPostsByBlogIdUseCase,
@@ -95,6 +96,7 @@ const useCases = [
     LikesModule,
     SecurityDevicesModule,
     QuizModule,
+    PairQuizGameModule,
   ],
   controllers: [BlogsController, BlogsSupeAdminController, PostsController],
   providers: [

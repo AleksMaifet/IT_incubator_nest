@@ -7,7 +7,7 @@ import { DEFAULT_TEST_DATA } from './data'
 import { AppModule } from '../src/app.module'
 import { MongoDatabaseModule } from '../src/configs'
 import { appSettings } from '../src/app.settings'
-import { makeAuthBasicRequest } from './helpers'
+import { makeAuthBasicRequest, makeAuthBearerRequest } from './helpers'
 
 describe('Quiz questions', () => {
   let application: INestApplication
@@ -16,7 +16,7 @@ describe('Quiz questions', () => {
   let quizQuestionId: string
   const invalidQuizQuestionId = '1ac24eab-b54a-41fc-a2c0-ad1ef5194c11'
 
-  const { QUIZ_QUESTION_DATA } = DEFAULT_TEST_DATA
+  const { QUIZ_QUESTION_DATA, QUIZ_ANSWERS, USER_DATA } = DEFAULT_TEST_DATA
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -46,6 +46,13 @@ describe('Quiz questions', () => {
     httpServer = application.getHttpServer()
 
     await request(httpServer).delete('/testing/all-data').expect(204)
+
+    await makeAuthBasicRequest(
+      httpServer,
+      'post',
+      '/sa/users',
+      USER_DATA,
+    ).expect(201)
   })
 
   afterAll(async () => {
@@ -77,7 +84,7 @@ describe('Quiz questions', () => {
       expect(res.body.published).toBe(false)
       expect(res.body).toHaveProperty('createdAt')
       expect(res.body).toHaveProperty('updatedAt')
-      expect(res.body.updatedAt).toBe(null)
+      expect(res.body.updatedAt).toBeNull()
     },
   )
 
@@ -127,7 +134,6 @@ describe('Quiz questions', () => {
       expect(question).toHaveProperty('published')
       expect(question).toHaveProperty('createdAt')
       expect(question).toHaveProperty('updatedAt')
-      expect(question.updatedAt).toBe(null)
     },
   )
 
@@ -198,6 +204,27 @@ describe('Quiz questions', () => {
           body: QUIZ_QUESTION_DATA.body.repeat(2),
         },
       ).expect(204)
+
+      const res = await makeAuthBasicRequest(
+        httpServer,
+        'get',
+        `/sa/quiz/questions?bodySearchTerm=string`,
+      ).expect(200)
+
+      const question = res.body.items[0]
+
+      expect(res.body).toHaveProperty('pagesCount')
+      expect(res.body).toHaveProperty('page')
+      expect(res.body).toHaveProperty('pageSize')
+      expect(res.body).toHaveProperty('totalCount')
+      expect(res.body).toHaveProperty('items')
+      expect(question).toHaveProperty('id')
+      expect(question).toHaveProperty('body')
+      expect(question).toHaveProperty('correctAnswers')
+      expect(question).toHaveProperty('published')
+      expect(question).toHaveProperty('createdAt')
+      expect(question).toHaveProperty('updatedAt')
+      expect(question.updatedAt).not.toBeNull()
     },
   )
 
@@ -263,7 +290,10 @@ describe('Quiz questions', () => {
         `/sa/quiz/questions`,
       ).expect(200)
 
-      expect(res.body.items[0].published).toBe(true)
+      const question = res.body.items[0]
+
+      expect(question.published).toBe(true)
+      expect(question.updatedAt).not.toBeNull()
     },
   )
 
@@ -294,6 +324,121 @@ describe('Quiz questions', () => {
         'delete',
         `/sa/quiz/questions/${invalidQuizQuestionId}`,
       ).expect(404)
+    },
+  )
+
+  it('POST -> "/pair-game-quiz/pairs/my-current/answers":  should return error if user is not inside active pair; status 403', async () => {
+    const resLogin = await request(httpServer)
+      .post('/auth/login')
+      .send({
+        loginOrEmail: USER_DATA.login,
+        password: USER_DATA.password,
+      })
+      .expect(200)
+
+    await makeAuthBearerRequest(
+      httpServer,
+      'post',
+      resLogin.body.accessToken,
+      '/pair-game-quiz/pairs/my-current/answers',
+      QUIZ_ANSWERS,
+    ).expect(403)
+  })
+
+  it('POST -> "/pair-game-quiz/pairs/connection": should create new pair for a quiz; status 200', async () => {
+    const secondUser = {
+      login: 'ulogin452',
+      password: 'ulogin452',
+      email: 'test2@mail.com',
+    }
+
+    const resLogin = await request(httpServer)
+      .post('/auth/login')
+      .send({
+        loginOrEmail: USER_DATA.login,
+        password: USER_DATA.password,
+      })
+      .expect(200)
+
+    await makeAuthBearerRequest(
+      httpServer,
+      'post',
+      resLogin.body.accessToken,
+      '/pair-game-quiz/pairs/connection',
+    ).expect(200)
+
+    await makeAuthBearerRequest(
+      httpServer,
+      'post',
+      resLogin.body.accessToken,
+      '/pair-game-quiz/pairs/connection',
+    ).expect(200)
+
+    await makeAuthBasicRequest(
+      httpServer,
+      'post',
+      '/sa/users',
+      secondUser,
+    ).expect(201)
+
+    const resSecondUserLogin = await request(httpServer)
+      .post('/auth/login')
+      .send({
+        loginOrEmail: secondUser.login,
+        password: secondUser.password,
+      })
+      .expect(200)
+
+    const res = await makeAuthBearerRequest(
+      httpServer,
+      'post',
+      resSecondUserLogin.body.accessToken,
+      '/pair-game-quiz/pairs/connection',
+    ).expect(200)
+
+    console.log(res.body, 'final')
+  })
+
+  it(
+    'POST -> "/pair-game-quiz/pairs/connection": should return error if auth credentials is incorrect; ' +
+      'status 401',
+    async () => {
+      await request(httpServer)
+        .post('/pair-game-quiz/pairs/connection')
+        .expect(401)
+    },
+  )
+
+  it('POST -> "/pair-game-quiz/pairs/my-current/answers": should create new answer for a quiz; status 200', async () => {
+    const resLogin = await request(httpServer)
+      .post('/auth/login')
+      .send({
+        loginOrEmail: USER_DATA.login,
+        password: USER_DATA.password,
+      })
+      .expect(200)
+
+    const res = await makeAuthBearerRequest(
+      httpServer,
+      'post',
+      resLogin.body.accessToken,
+      '/pair-game-quiz/pairs/my-current/answers',
+      QUIZ_ANSWERS,
+    ).expect(200)
+
+    expect(res.body).toHaveProperty('questionId')
+    expect(res.body).toHaveProperty('answerStatus')
+    expect(res.body).toHaveProperty('addedAt')
+  })
+
+  it(
+    'POST -> "/pair-game-quiz/pairs/my-current/answers": should return error if auth credentials is incorrect; ' +
+      'status 401',
+    async () => {
+      await request(httpServer)
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .send(QUIZ_ANSWERS)
+        .expect(401)
     },
   )
 })

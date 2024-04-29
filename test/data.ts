@@ -2,6 +2,7 @@ import { CreateUserDto } from '../src/users'
 import { BaseCommentDto } from '../src/comments'
 import { BaseBlogDto, BasePostDto } from '../src/blogs'
 import { BaseQuizQuestionDto } from '../src/quiz'
+import { AnswerDto } from '../src/pair-quiz-game/dto'
 
 interface IDefaultTestData {
   USER_DATA: CreateUserDto
@@ -9,6 +10,7 @@ interface IDefaultTestData {
   BLOG_DATA: BaseBlogDto
   COMMENT_DATA: BaseCommentDto
   QUIZ_QUESTION_DATA: BaseQuizQuestionDto
+  QUIZ_ANSWERS: AnswerDto
 }
 
 const DEFAULT_TEST_DATA: IDefaultTestData = {
@@ -33,6 +35,9 @@ const DEFAULT_TEST_DATA: IDefaultTestData = {
   QUIZ_QUESTION_DATA: {
     body: 'stringstri',
     correctAnswers: ['string'],
+  },
+  QUIZ_ANSWERS: {
+    answer: 'string',
   },
 }
 
