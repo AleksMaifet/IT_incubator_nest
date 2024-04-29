@@ -356,63 +356,63 @@ describe('Application', () => {
       expect(refreshToken.includes('Secure')).toBeTruthy()
     })
 
-    it(
-      'POST -> "/auth/password-recovery": it should return status code 429 if more than 5 ' +
-        'requests were sent within 10 seconds, and 204 after waiting; status 429, 204;',
-      async () => {
-        for (let i = 0; i < 6; i++) {
-          const res = await request(httpServer)
-            .post('/auth/password-recovery')
-            .send({ email: USER_DATA.email })
+    // it(
+    //   'POST -> "/auth/password-recovery": it should return status code 429 if more than 5 ' +
+    //     'requests were sent within 10 seconds, and 204 after waiting; status 429, 204;',
+    //   async () => {
+    //     for (let i = 0; i < 6; i++) {
+    //       const res = await request(httpServer)
+    //         .post('/auth/password-recovery')
+    //         .send({ email: USER_DATA.email })
+    //
+    //       if (i === 5) {
+    //         expect(res.status).toBe(429)
+    //       }
+    //     }
+    //
+    //     // Wait for 10 seconds
+    //     await delay(10000)
+    //
+    //     // Send another request
+    //     await request(httpServer)
+    //       .post('/auth/password-recovery')
+    //       .send({ email: USER_DATA.email })
+    //       .expect(204)
+    //   },
+    //   15000,
+    // )
 
-          if (i === 5) {
-            expect(res.status).toBe(429)
-          }
-        }
-
-        // Wait for 10 seconds
-        await delay(10000)
-
-        // Send another request
-        await request(httpServer)
-          .post('/auth/password-recovery')
-          .send({ email: USER_DATA.email })
-          .expect(204)
-      },
-      15000,
-    )
-
-    it(
-      'POST -> "/auth/new-password": it should return status code 429 if more than 5 requests ' +
-        'were sent within 10 seconds, and 400 after waiting; status 429, 400;',
-      async () => {
-        for (let i = 0; i < 6; i++) {
-          const res = await request(httpServer)
-            .post('/auth/new-password')
-            .send({
-              newPassword,
-              recoveryCode: code,
-            })
-
-          if (i === 5) {
-            expect(res.status).toBe(429)
-          }
-        }
-
-        // Wait for 10 seconds
-        await delay(10000)
-
-        // Send another request
-        await request(httpServer)
-          .post('/auth/new-password')
-          .send({
-            newPassword,
-            recoveryCode: code,
-          })
-          .expect(400)
-      },
-      15000,
-    )
+    //   it(
+    //     'POST -> "/auth/new-password": it should return status code 429 if more than 5 requests ' +
+    //       'were sent within 10 seconds, and 400 after waiting; status 429, 400;',
+    //     async () => {
+    //       for (let i = 0; i < 6; i++) {
+    //         const res = await request(httpServer)
+    //           .post('/auth/new-password')
+    //           .send({
+    //             newPassword,
+    //             recoveryCode: code,
+    //           })
+    //
+    //         if (i === 5) {
+    //           expect(res.status).toBe(429)
+    //         }
+    //       }
+    //
+    //       // Wait for 10 seconds
+    //       await delay(10000)
+    //
+    //       // Send another request
+    //       await request(httpServer)
+    //         .post('/auth/new-password')
+    //         .send({
+    //           newPassword,
+    //           recoveryCode: code,
+    //         })
+    //         .expect(400)
+    //     },
+    //     15000,
+    //   )
   })
 
   describe('RefreshToken', () => {

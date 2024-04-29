@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm'
 
 @Entity('quizQuestions')
@@ -23,6 +22,6 @@ export class QuizQuestionEntity {
   @CreateDateColumn({ nullable: true })
   createdAt: string
 
-  @UpdateDateColumn({ nullable: true })
+  @Column({ nullable: true })
   updatedAt: string
 }

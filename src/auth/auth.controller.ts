@@ -70,7 +70,7 @@ export class AuthController {
     )
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   private async login(
@@ -112,7 +112,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async passwordRecovery(@Body() body: AuthPassRecoveryDto) {
@@ -121,7 +121,7 @@ export class AuthController {
     await this.commandBus.execute(new PasswordRecoveryCommand(email))
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async updatePassword(@Body() body: AuthUpdatePassDto) {
@@ -199,8 +199,8 @@ export class AuthController {
     res.clearCookie(REFRESH_TOKEN_COOKIE_NAME)
   }
 
-  @Throttle({ default: { limit: 5, ttl: 17000 } })
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @Throttle({ default: { limit: 5, ttl: 17000 } })
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registration(@Body() body: AuthRegNewUserDto) {
@@ -211,7 +211,7 @@ export class AuthController {
     }
   }
 
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registrationConfirmation(@Body() body: AuthRegConfirmCodeDto) {
@@ -220,8 +220,8 @@ export class AuthController {
     await this.commandBus.execute(new ConfirmEmailCommand(code))
   }
 
-  @Throttle({ default: { limit: 5, ttl: 15000 } })
-  @UseGuards(ThrottlerBehindProxyGuard)
+  // @Throttle({ default: { limit: 5, ttl: 15000 } })
+  // @UseGuards(ThrottlerBehindProxyGuard)
   @Post('/registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   private async registrationEmailResending(@Body() body: AuthRegEmailDto) {

@@ -77,6 +77,7 @@ describe('Quiz questions', () => {
       expect(res.body.published).toBe(false)
       expect(res.body).toHaveProperty('createdAt')
       expect(res.body).toHaveProperty('updatedAt')
+      expect(res.body.updatedAt).toBe(null)
     },
   )
 
@@ -126,6 +127,7 @@ describe('Quiz questions', () => {
       expect(question).toHaveProperty('published')
       expect(question).toHaveProperty('createdAt')
       expect(question).toHaveProperty('updatedAt')
+      expect(question.updatedAt).toBe(null)
     },
   )
 
