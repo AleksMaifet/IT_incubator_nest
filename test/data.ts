@@ -1,12 +1,14 @@
 import { CreateUserDto } from '../src/users'
 import { BaseCommentDto } from '../src/comments'
 import { BaseBlogDto, BasePostDto } from '../src/blogs'
+import { BaseQuizQuestionDto } from '../src/quiz'
 
 interface IDefaultTestData {
   USER_DATA: CreateUserDto
   POST_DATA: BasePostDto
   BLOG_DATA: BaseBlogDto
   COMMENT_DATA: BaseCommentDto
+  QUIZ_QUESTION_DATA: BaseQuizQuestionDto
 }
 
 const DEFAULT_TEST_DATA: IDefaultTestData = {
@@ -27,6 +29,10 @@ const DEFAULT_TEST_DATA: IDefaultTestData = {
   },
   COMMENT_DATA: {
     content: 'stringstringstringst',
+  },
+  QUIZ_QUESTION_DATA: {
+    body: 'stringstri',
+    correctAnswers: ['string'],
   },
 }
 

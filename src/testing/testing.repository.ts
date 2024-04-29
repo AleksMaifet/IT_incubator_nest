@@ -43,7 +43,7 @@ class TestingRepository {
 
   public async deleteAllFromPostgres() {
     await this.dataSource.query(`
-    TRUNCATE users, confirmation, "refreshTokenMeta", blogs, posts, comments, "postLike", "commentLike"
+    TRUNCATE users, confirmation, "refreshTokenMeta", blogs, posts, comments, "postLike", "commentLike", "quizQuestions"
     `)
   }
 }

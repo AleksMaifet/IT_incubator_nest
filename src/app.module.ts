@@ -35,6 +35,7 @@ import { AuthModule } from './auth'
 import { UsersModule } from './users'
 import { SecurityDevicesModule } from './security-devices'
 import { LikesModule } from './likes'
+import { QuizModule } from './quiz'
 import { AccessTokenStrategy, BasicStrategy } from './libs/strategies'
 import {
   CreateBlogUseCase,
@@ -93,6 +94,7 @@ const useCases = [
     CommentsModule,
     LikesModule,
     SecurityDevicesModule,
+    QuizModule,
   ],
   controllers: [BlogsController, BlogsSupeAdminController, PostsController],
   providers: [

@@ -66,12 +66,9 @@ class BlogsSqlRepository {
   }
 
   private _createdResponse<T>(
-    dto: Pick<
-      GetBlogsRequestQuery<number> & {
-        totalCount: number
-      },
-      'totalCount' | 'pageNumber' | 'pageSize'
-    >,
+    dto: Pick<GetBlogsRequestQuery<number>, 'pageNumber' | 'pageSize'> & {
+      totalCount: number
+    },
   ) {
     const { totalCount, pageNumber, pageSize } = dto
 
