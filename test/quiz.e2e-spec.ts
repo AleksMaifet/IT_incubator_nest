@@ -77,7 +77,7 @@ describe('Quiz questions', () => {
       expect(res.body.published).toBe(false)
       expect(res.body).toHaveProperty('createdAt')
       expect(res.body).toHaveProperty('updatedAt')
-      expect(res.body.updatedAt).toBe(null)
+      expect(res.body.updatedAt).toBeNull()
     },
   )
 
@@ -127,7 +127,6 @@ describe('Quiz questions', () => {
       expect(question).toHaveProperty('published')
       expect(question).toHaveProperty('createdAt')
       expect(question).toHaveProperty('updatedAt')
-      expect(question.updatedAt).toBe(null)
     },
   )
 
@@ -198,6 +197,27 @@ describe('Quiz questions', () => {
           body: QUIZ_QUESTION_DATA.body.repeat(2),
         },
       ).expect(204)
+
+      const res = await makeAuthBasicRequest(
+        httpServer,
+        'get',
+        `/sa/quiz/questions?bodySearchTerm=string`,
+      ).expect(200)
+
+      const question = res.body.items[0]
+
+      expect(res.body).toHaveProperty('pagesCount')
+      expect(res.body).toHaveProperty('page')
+      expect(res.body).toHaveProperty('pageSize')
+      expect(res.body).toHaveProperty('totalCount')
+      expect(res.body).toHaveProperty('items')
+      expect(question).toHaveProperty('id')
+      expect(question).toHaveProperty('body')
+      expect(question).toHaveProperty('correctAnswers')
+      expect(question).toHaveProperty('published')
+      expect(question).toHaveProperty('createdAt')
+      expect(question).toHaveProperty('updatedAt')
+      expect(question.updatedAt).not.toBeNull()
     },
   )
 
@@ -263,7 +283,10 @@ describe('Quiz questions', () => {
         `/sa/quiz/questions`,
       ).expect(200)
 
-      expect(res.body.items[0].published).toBe(true)
+      const question = res.body.items[0]
+
+      expect(question.published).toBe(true)
+      expect(question.updatedAt).not.toBeNull()
     },
   )
 

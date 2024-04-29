@@ -120,7 +120,7 @@ export class QuizRepository {
   }
 
   public async createQuestion(dto: BaseQuizQuestionDto) {
-    return await this.repository.save({ ...dto })
+    return await this.repository.save(dto)
   }
 
   public async updateQuestionById({
@@ -130,7 +130,13 @@ export class QuizRepository {
     questionId: string
     dto: BaseQuizQuestionDto
   }) {
-    const result = await this.repository.update({ id: questionId }, dto)
+    const result = await this.repository.update(
+      { id: questionId },
+      {
+        ...dto,
+        updatedAt: new Date().toISOString(),
+      },
+    )
 
     return result.affected
   }
@@ -142,7 +148,13 @@ export class QuizRepository {
     questionId: string
     dto: UpdatePublishQuizQuestionDto
   }) {
-    const result = await this.repository.update({ id: questionId }, dto)
+    const result = await this.repository.update(
+      { id: questionId },
+      {
+        ...dto,
+        updatedAt: new Date().toISOString(),
+      },
+    )
 
     return result.affected
   }
