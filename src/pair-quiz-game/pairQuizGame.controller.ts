@@ -11,9 +11,13 @@ import { JwtAuthGuard } from '../libs/guards'
 import { User } from '../libs/decorators'
 import { IJwtUser } from '../libs/interfaces'
 import { PairQuizGameRepository } from './pairQuizGame.repository'
-import { PlayerProgressEntity } from './entities'
+import {
+  AnswerEntity,
+  GameEntity,
+  PlayerProgressEntity,
+  QuestionEntity,
+} from './entities'
 import { AnswerDto } from './dto'
-import { ANSWER_STATUS_ENUM } from './interfaces'
 
 @Controller('pair-game-quiz/pairs')
 export class PairQuizGameController {
@@ -21,45 +25,27 @@ export class PairQuizGameController {
     private readonly pairQuizGameRepository: PairQuizGameRepository,
   ) {}
 
-  private _mapPlayerProgress(playerProgress: PlayerProgressEntity) {
-    if (!playerProgress) return playerProgress
-
-    const { score, user } = playerProgress
-    const { id, login } = user
-
-    return {
-      answers: [],
-      player: {
-        id,
-        login,
-      },
-      score,
-    }
-  }
-
   // TODO create 403 code
   @UseGuards(JwtAuthGuard)
   @Post('/my-current/answers')
   @HttpCode(HttpStatus.OK)
   private async createAnswers(@User() user: IJwtUser, @Body() dto: AnswerDto) {
-    const activeGame = await this.pairQuizGameRepository.getActiveGameByUser(
-      user.userId,
-    )
+    const { userId } = user
+
+    const activeGame =
+      await this.pairQuizGameRepository.getActiveGameByUser(userId)
 
     if (!activeGame) {
       throw new ForbiddenException()
     }
 
-    const { id, addedAt } = await this.pairQuizGameRepository.createAnswer({
+    const answer = await this.pairQuizGameRepository.createAnswer({
       dto,
       game: activeGame,
+      userId,
     })
 
-    return {
-      questionId: id,
-      answerStatus: ANSWER_STATUS_ENUM.Correct,
-      addedAt,
-    }
+    return PairQuizGameController.answerViewModel(answer)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -74,29 +60,13 @@ export class PairQuizGameController {
       throw new ForbiddenException()
     }
 
-    const {
-      id,
-      firstPlayerProgress,
-      secondPlayerProgress,
-      status,
-      questions,
-      pairCreatedDate,
-      startGameDate,
-      finishGameDate,
-    } = await this.pairQuizGameRepository.joinOrCreateGame(user)
+    const game = await this.pairQuizGameRepository.joinOrCreateGame(user)
+    const answers = await this.pairQuizGameRepository.getAllAnswersByUser({
+      userId: user.userId,
+      gamaId: game.id,
+    })
 
-    const mapGameQuestions = questions.map(({ id, body }) => ({ id, body }))
-
-    return {
-      id,
-      firstPlayerProgress: this._mapPlayerProgress(firstPlayerProgress),
-      secondPlayerProgress: this._mapPlayerProgress(secondPlayerProgress),
-      questions: mapGameQuestions,
-      status,
-      pairCreatedDate,
-      startGameDate,
-      finishGameDate,
-    }
+    return PairQuizGameController.pairConnectionViewModel(game)
   }
 
   // @Get()
@@ -121,4 +91,62 @@ export class PairQuizGameController {
   // remove(@Param('id') id: string) {
   //   return this.pairQuizGameRepository.remove(+id)
   // }
+
+  static playerProgressViewModel(playerProgress: PlayerProgressEntity) {
+    if (!playerProgress) return null
+
+    const { score, user } = playerProgress
+    const { id, login } = user
+
+    return {
+      answers: [],
+      player: {
+        id,
+        login,
+      },
+      score,
+    }
+  }
+
+  static answerViewModel(answer: AnswerEntity) {
+    const { questionId, answerStatus, addedAt } = answer
+
+    return {
+      questionId,
+      answerStatus,
+      addedAt,
+    }
+  }
+
+  static questionsViewMode(questions: QuestionEntity[]) {
+    if (!questions) return null
+
+    return questions.map(({ id, body }) => ({ id, body }))
+  }
+
+  static pairConnectionViewModel(dto: GameEntity) {
+    const {
+      id,
+      firstPlayerProgress,
+      secondPlayerProgress,
+      status,
+      questions,
+      pairCreatedDate,
+      startGameDate,
+      finishGameDate,
+    } = dto
+
+    return {
+      id,
+      firstPlayerProgress:
+        PairQuizGameController.playerProgressViewModel(firstPlayerProgress),
+      secondPlayerProgress:
+        PairQuizGameController.playerProgressViewModel(secondPlayerProgress),
+      questions: PairQuizGameController.questionsViewMode(questions),
+      status,
+      pairCreatedDate,
+      startGameDate,
+      finishGameDate,
+    }
+  }
 }

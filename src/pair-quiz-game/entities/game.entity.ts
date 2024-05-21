@@ -23,7 +23,7 @@ export class GameEntity {
   @JoinColumn()
   public secondPlayerProgress: PlayerProgressEntity
 
-  @Column('text', { array: true, default: [] })
+  @Column('text', { array: true, default: null })
   public questions: QuestionEntity[]
 
   @Column({ default: GAME_STATUS_ENUM.PendingSecondPlayer })

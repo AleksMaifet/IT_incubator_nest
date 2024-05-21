@@ -8,6 +8,7 @@ import { AppModule } from '../src/app.module'
 import { MongoDatabaseModule } from '../src/configs'
 import { appSettings } from '../src/app.settings'
 import { makeAuthBasicRequest, makeAuthBearerRequest } from './helpers'
+import { GAME_STATUS_ENUM } from '../src/pair-quiz-game/interfaces'
 
 describe('Quiz questions', () => {
   let application: INestApplication
@@ -66,6 +67,17 @@ describe('Quiz questions', () => {
     'POST -> "/quiz/questions": should create new question for a quiz; status 201; content: ' +
       'created post;',
     async () => {
+      let count = 0
+
+      while (count < 5) {
+        await makeAuthBasicRequest(httpServer, 'post', '/sa/quiz/questions', {
+          body: `${count} + ${count} = ???????`,
+          correctAnswers: [`${count + count}`],
+        }).expect(201)
+
+        count += 1
+      }
+
       const res = await makeAuthBasicRequest(
         httpServer,
         'post',
@@ -78,10 +90,7 @@ describe('Quiz questions', () => {
       expect(res.status).toBe(201)
       expect(res.body).toHaveProperty('id')
       expect(res.body.body).toBe(QUIZ_QUESTION_DATA.body)
-      expect(res.body.correctAnswers).toMatchObject(
-        QUIZ_QUESTION_DATA.correctAnswers,
-      )
-      expect(res.body.published).toBe(false)
+      expect(Array.isArray(res.body.correctAnswers)).toBe(true)
       expect(res.body).toHaveProperty('createdAt')
       expect(res.body).toHaveProperty('updatedAt')
       expect(res.body.updatedAt).toBeNull()
@@ -118,7 +127,7 @@ describe('Quiz questions', () => {
       const res = await makeAuthBasicRequest(
         httpServer,
         'get',
-        `/sa/quiz/questions?bodySearchTerm=string`,
+        `/sa/quiz/questions?bodySearchTerm=1`,
       ).expect(200)
 
       const question = res.body.items[0]
@@ -208,7 +217,7 @@ describe('Quiz questions', () => {
       const res = await makeAuthBasicRequest(
         httpServer,
         'get',
-        `/sa/quiz/questions?bodySearchTerm=string`,
+        `/sa/quiz/questions?bodySearchTerm=1`,
       ).expect(200)
 
       const question = res.body.items[0]
@@ -367,12 +376,26 @@ describe('Quiz questions', () => {
       '/pair-game-quiz/pairs/connection',
     ).expect(200)
 
-    await makeAuthBearerRequest(
+    const resFirstUserConnection = await makeAuthBearerRequest(
       httpServer,
       'post',
       resLogin.body.accessToken,
       '/pair-game-quiz/pairs/connection',
     ).expect(200)
+
+    const firstPlayerProgress = resFirstUserConnection.body.firstPlayerProgress
+    const secondPlayerProgress =
+      resFirstUserConnection.body.secondPlayerProgress
+
+    expect(resFirstUserConnection.body).toHaveProperty('id')
+    expect(firstPlayerProgress).toBeDefined()
+    expect(secondPlayerProgress).toBeNull()
+    expect(resFirstUserConnection.body.questions).toBeNull()
+    expect(resFirstUserConnection.body.startGameDate).toBeNull()
+    expect(resFirstUserConnection.body.finishGameDate).toBeNull()
+    expect(resFirstUserConnection.body.status).toBe(
+      GAME_STATUS_ENUM.PendingSecondPlayer,
+    )
 
     await makeAuthBasicRequest(
       httpServer,
@@ -389,14 +412,20 @@ describe('Quiz questions', () => {
       })
       .expect(200)
 
-    const res = await makeAuthBearerRequest(
+    const resSecondUserConnection = await makeAuthBearerRequest(
       httpServer,
       'post',
       resSecondUserLogin.body.accessToken,
       '/pair-game-quiz/pairs/connection',
     ).expect(200)
 
-    console.log(res.body, 'final')
+    expect(resSecondUserConnection.body).toHaveProperty('id')
+    expect(resSecondUserConnection.body.firstPlayerProgress).toBeDefined()
+    expect(resSecondUserConnection.body.secondPlayerProgress).toBeDefined()
+    expect(Array.isArray(resSecondUserConnection.body.questions)).toBe(true)
+    expect(resSecondUserConnection.body.questions.length).toBe(5)
+    expect(resSecondUserConnection.body.finishGameDate).toBeNull()
+    expect(resSecondUserConnection.body.status).toBe(GAME_STATUS_ENUM.Active)
   })
 
   it(

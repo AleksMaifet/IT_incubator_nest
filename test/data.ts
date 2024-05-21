@@ -33,8 +33,8 @@ const DEFAULT_TEST_DATA: IDefaultTestData = {
     content: 'stringstringstringst',
   },
   QUIZ_QUESTION_DATA: {
-    body: 'stringstri',
-    correctAnswers: ['string'],
+    body: '1+1 = ??????',
+    correctAnswers: ['2'],
   },
   QUIZ_ANSWERS: {
     answer: 'string',

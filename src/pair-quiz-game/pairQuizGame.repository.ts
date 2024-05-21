@@ -3,7 +3,7 @@ import { DataSource, Repository } from 'typeorm'
 import { IJwtUser } from '../libs/interfaces'
 import { AnswerDto } from './dto'
 import { AnswerEntity, GameEntity, PlayerProgressEntity } from './entities'
-import { GAME_STATUS_ENUM } from './interfaces'
+import { ANSWER_STATUS_ENUM, GAME_STATUS_ENUM } from './interfaces'
 
 export class PairQuizGameRepository {
   constructor(
@@ -19,13 +19,41 @@ export class PairQuizGameRepository {
   public async createAnswer({
     game,
     dto,
+    userId,
   }: {
     game: GameEntity
     dto: AnswerDto
+    userId: string
   }) {
+    const { answer } = dto
+
+    const userAnswers = await this.answerRepository.find({
+      where: [
+        {
+          game: {
+            id: game.id,
+            firstPlayerProgress: { user: { id: userId } },
+          },
+        },
+        {
+          game: {
+            id: game.id,
+            secondPlayerProgress: { user: { id: userId } },
+          },
+        },
+      ],
+    })
+
+    const currentQuestion = game.questions[userAnswers.length]
+    const answerStatus = currentQuestion.correctAnswers.includes(answer)
+      ? ANSWER_STATUS_ENUM.Correct
+      : ANSWER_STATUS_ENUM.Incorrect
+
     return await this.answerRepository.save({
-      body: dto.answer,
+      body: answer,
       game,
+      answerStatus,
+      questionId: currentQuestion.id,
     })
   }
 
@@ -67,9 +95,16 @@ export class PairQuizGameRepository {
       })
     }
 
+    const questions = await this.dataSource.query(
+      `SELECT id, body, "correctAnswers" FROM "quizQuestions"
+             WHERE published IS true
+             ORDER BY RANDOM() LIMIT 5`,
+    )
+
     pendingGame.secondPlayerProgress = userProgress
     pendingGame.status = GAME_STATUS_ENUM.Active
     pendingGame.startGameDate = new Date()
+    pendingGame.questions = questions
 
     await this.gameRepository.save(pendingGame)
 
@@ -77,7 +112,7 @@ export class PairQuizGameRepository {
   }
 
   public async getActiveGameByUser(userId: string) {
-    return await this.gameRepository.findOne({
+    const game = await this.gameRepository.findOne({
       where: [
         {
           firstPlayerProgress: { user: { id: userId } },
@@ -88,7 +123,41 @@ export class PairQuizGameRepository {
           status: GAME_STATUS_ENUM.Active,
         },
       ],
-      // relations: ['firstPlayerProgress.user', 'secondPlayerProgress.user'],
+    })
+
+    if (!game) return null
+
+    // TODO pg doesn't create array in column => save as text by default
+    const convertedQuestions = game.questions.map((q: any) => JSON.parse(q))
+
+    return {
+      ...game,
+      questions: convertedQuestions,
+    }
+  }
+
+  public async getAllAnswersByUser({
+    userId,
+    gamaId,
+  }: {
+    userId: string
+    gamaId: string
+  }) {
+    return await this.answerRepository.find({
+      where: [
+        {
+          game: {
+            id: gamaId,
+            firstPlayerProgress: { id: userId },
+          },
+        },
+        {
+          game: {
+            id: gamaId,
+            secondPlayerProgress: { id: userId },
+          },
+        },
+      ],
     })
   }
 }
