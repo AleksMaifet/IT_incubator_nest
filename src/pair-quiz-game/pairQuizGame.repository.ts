@@ -95,9 +95,10 @@ export class PairQuizGameRepository {
       })
     }
 
+    // WHERE published IS true
+
     const questions = await this.dataSource.query(
       `SELECT id, body, "correctAnswers" FROM "quizQuestions"
-             WHERE published IS true
              ORDER BY RANDOM() LIMIT 5`,
     )
 
@@ -136,24 +137,16 @@ export class PairQuizGameRepository {
     }
   }
 
-  public async getAllAnswersByUser({
-    userId,
-    gamaId,
-  }: {
-    userId: string
-    gamaId: string
-  }) {
+  public async getAllAnswersByUser({ userId }: { userId: string }) {
     return await this.answerRepository.find({
       where: [
         {
           game: {
-            id: gamaId,
             firstPlayerProgress: { id: userId },
           },
         },
         {
           game: {
-            id: gamaId,
             secondPlayerProgress: { id: userId },
           },
         },

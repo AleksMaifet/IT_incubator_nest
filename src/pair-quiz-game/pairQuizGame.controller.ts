@@ -60,11 +60,15 @@ export class PairQuizGameController {
       throw new ForbiddenException()
     }
 
-    const game = await this.pairQuizGameRepository.joinOrCreateGame(user)
     const answers = await this.pairQuizGameRepository.getAllAnswersByUser({
       userId: user.userId,
-      gamaId: game.id,
     })
+
+    if (answers.length > 5) {
+      throw new ForbiddenException()
+    }
+
+    const game = await this.pairQuizGameRepository.joinOrCreateGame(user)
 
     return PairQuizGameController.pairConnectionViewModel(game)
   }
