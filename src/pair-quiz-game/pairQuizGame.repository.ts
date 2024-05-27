@@ -27,21 +27,9 @@ export class PairQuizGameRepository {
   }) {
     const { answer } = dto
 
-    const userAnswers = await this.answerRepository.find({
-      where: [
-        {
-          game: {
-            id: game.id,
-            firstPlayerProgress: { user: { id: userId } },
-          },
-        },
-        {
-          game: {
-            id: game.id,
-            secondPlayerProgress: { user: { id: userId } },
-          },
-        },
-      ],
+    const userAnswers = await this.getAllAnswersByUser({
+      userId,
+      gameId: game.id,
     })
 
     const currentQuestion = game.questions[userAnswers.length]
@@ -137,17 +125,25 @@ export class PairQuizGameRepository {
     }
   }
 
-  public async getAllAnswersByUser({ userId }: { userId: string }) {
+  public async getAllAnswersByUser({
+    userId,
+    gameId,
+  }: {
+    userId: string
+    gameId: string
+  }) {
     return await this.answerRepository.find({
       where: [
         {
           game: {
-            firstPlayerProgress: { id: userId },
+            id: gameId,
+            firstPlayerProgress: { user: { id: userId } },
           },
         },
         {
           game: {
-            secondPlayerProgress: { id: userId },
+            id: gameId,
+            secondPlayerProgress: { user: { id: userId } },
           },
         },
       ],
