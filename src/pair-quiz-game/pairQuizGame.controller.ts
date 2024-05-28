@@ -44,6 +44,9 @@ export class PairQuizGameController {
       { userId, gameId: activeGame.id },
     )
 
+    console.log(userAnswers)
+    console.log(userAnswers.length)
+
     if (userAnswers.length > MAX_AMOUNT_QUESTIONS) {
       throw new ForbiddenException()
     }
