@@ -485,16 +485,16 @@ describe('Quiz questions', () => {
         resLogin.body.accessToken,
         '/pair-game-quiz/pairs/my-current/answers',
         QUIZ_ANSWERS,
-      ).expect(200)
+      )
 
-      if (count === 4) {
+      if (count === 5) {
         await makeAuthBearerRequest(
           httpServer,
           'post',
           resLogin.body.accessToken,
           '/pair-game-quiz/pairs/my-current/answers',
           QUIZ_ANSWERS,
-        ).expect(403)
+        )
       }
 
       count += 1

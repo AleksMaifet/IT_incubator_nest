@@ -47,7 +47,7 @@ export class PairQuizGameController {
     console.log(userAnswers)
     console.log(userAnswers.length)
 
-    if (userAnswers.length > MAX_AMOUNT_QUESTIONS) {
+    if (userAnswers.length > MAX_AMOUNT_QUESTIONS - 1) {
       throw new ForbiddenException()
     }
 
