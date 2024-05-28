@@ -14,7 +14,7 @@ export class AnswerEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string
 
-  @Column('uuid')
+  @Column('uuid', { default: null })
   public questionId: string
 
   @ManyToOne(() => GameEntity)
@@ -24,7 +24,7 @@ export class AnswerEntity {
   @Column()
   public body: string
 
-  @Column()
+  @Column({ default: ANSWER_STATUS_ENUM.Incorrect })
   public answerStatus: ANSWER_STATUS_ENUM
 
   @CreateDateColumn()

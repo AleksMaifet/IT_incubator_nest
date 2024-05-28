@@ -1,9 +1,9 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-import { IJwtUser } from '../libs/interfaces'
 import { AnswerDto } from './dto'
 import { AnswerEntity, GameEntity, PlayerProgressEntity } from './entities'
 import { ANSWER_STATUS_ENUM, GAME_STATUS_ENUM } from './interfaces'
+import { MAX_AMOUNT_QUESTIONS } from './constants'
 
 export class PairQuizGameRepository {
   constructor(
@@ -27,27 +27,36 @@ export class PairQuizGameRepository {
   }) {
     const { answer } = dto
 
-    const userAnswers = await this.getAllAnswersByUser({
+    const userAnswers = await this.getAllAnswersByUserId({
       userId,
       gameId: game.id,
     })
 
     const currentQuestion = game.questions[userAnswers.length]
-    const answerStatus = currentQuestion.correctAnswers.includes(answer)
-      ? ANSWER_STATUS_ENUM.Correct
-      : ANSWER_STATUS_ENUM.Incorrect
-
-    return await this.answerRepository.save({
+    const defaultSaveEntity = {
       body: answer,
       game,
-      answerStatus,
-      questionId: currentQuestion.id,
-    })
+    }
+
+    switch (true) {
+      case !currentQuestion:
+        return await this.answerRepository.save(defaultSaveEntity)
+      case !currentQuestion.correctAnswers.includes(answer):
+        return await this.answerRepository.save({
+          ...defaultSaveEntity,
+          answerStatus: ANSWER_STATUS_ENUM.Incorrect,
+          questionId: currentQuestion.id,
+        })
+      default:
+        return await this.answerRepository.save({
+          ...defaultSaveEntity,
+          answerStatus: ANSWER_STATUS_ENUM.Correct,
+          questionId: currentQuestion.id,
+        })
+    }
   }
 
-  public async joinOrCreateGame(user: IJwtUser) {
-    const { userId } = user
-
+  public async joinOrCreateGame(userId: string) {
     const pendingGame = await this.gameRepository.findOne({
       where: {
         status: GAME_STATUS_ENUM.PendingSecondPlayer,
@@ -57,7 +66,7 @@ export class PairQuizGameRepository {
     })
 
     if (pendingGame?.firstPlayerProgress.user.id === userId) {
-      return pendingGame
+      return null
     }
 
     let userProgress = await this.playerProgressRepository.findOneBy({
@@ -83,11 +92,10 @@ export class PairQuizGameRepository {
       })
     }
 
-    // WHERE published IS true
-
     const questions = await this.dataSource.query(
       `SELECT id, body, "correctAnswers" FROM "quizQuestions"
-             ORDER BY RANDOM() LIMIT 5`,
+             WHERE published IS true
+             ORDER BY RANDOM() LIMIT ${MAX_AMOUNT_QUESTIONS}`,
     )
 
     pendingGame.secondPlayerProgress = userProgress
@@ -100,7 +108,7 @@ export class PairQuizGameRepository {
     return pendingGame
   }
 
-  public async getActiveGameByUser(userId: string) {
+  public async getActiveGameByUserId(userId: string) {
     const game = await this.gameRepository.findOne({
       where: [
         {
@@ -112,6 +120,7 @@ export class PairQuizGameRepository {
           status: GAME_STATUS_ENUM.Active,
         },
       ],
+      relations: ['firstPlayerProgress', 'secondPlayerProgress'],
     })
 
     if (!game) return null
@@ -125,7 +134,7 @@ export class PairQuizGameRepository {
     }
   }
 
-  public async getAllAnswersByUser({
+  public async getAllAnswersByUserId({
     userId,
     gameId,
   }: {

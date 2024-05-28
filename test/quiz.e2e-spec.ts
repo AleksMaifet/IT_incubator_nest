@@ -67,17 +67,6 @@ describe('Quiz questions', () => {
     'POST -> "/quiz/questions": should create new question for a quiz; status 201; content: ' +
       'created post;',
     async () => {
-      let count = 0
-
-      while (count < 5) {
-        await makeAuthBasicRequest(httpServer, 'post', '/sa/quiz/questions', {
-          body: `${count} + ${count} = ???????`,
-          correctAnswers: [`${count + count}`],
-        }).expect(201)
-
-        count += 1
-      }
-
       const res = await makeAuthBasicRequest(
         httpServer,
         'post',
@@ -361,6 +350,31 @@ describe('Quiz questions', () => {
       email: 'test2@mail.com',
     }
 
+    let count = 0
+
+    while (count < 5) {
+      const resCreateQuestion = await makeAuthBasicRequest(
+        httpServer,
+        'post',
+        '/sa/quiz/questions',
+        {
+          body: `${count} + ${count} = ???????`,
+          correctAnswers: [`${count + count}`],
+        },
+      ).expect(201)
+
+      await makeAuthBasicRequest(
+        httpServer,
+        'put',
+        `/sa/quiz/questions/${resCreateQuestion.body.id}/publish`,
+        {
+          published: true,
+        },
+      ).expect(204)
+
+      count += 1
+    }
+
     const resLogin = await request(httpServer)
       .post('/auth/login')
       .send({
@@ -368,13 +382,6 @@ describe('Quiz questions', () => {
         password: USER_DATA.password,
       })
       .expect(200)
-
-    await makeAuthBearerRequest(
-      httpServer,
-      'post',
-      resLogin.body.accessToken,
-      '/pair-game-quiz/pairs/connection',
-    ).expect(200)
 
     const resFirstUserConnection = await makeAuthBearerRequest(
       httpServer,
@@ -458,6 +465,40 @@ describe('Quiz questions', () => {
     expect(res.body).toHaveProperty('questionId')
     expect(res.body).toHaveProperty('answerStatus')
     expect(res.body).toHaveProperty('addedAt')
+  })
+
+  it('POST -> "/pair-game-quiz/pairs/my-current/answers": create new game by user1, connect to game by user2, add 6 answers by user1. Should return error if current user has already answered to all questions; status 403', async () => {
+    let count = 0
+
+    const resLogin = await request(httpServer)
+      .post('/auth/login')
+      .send({
+        loginOrEmail: USER_DATA.login,
+        password: USER_DATA.password,
+      })
+      .expect(200)
+
+    while (count < 5) {
+      await makeAuthBearerRequest(
+        httpServer,
+        'post',
+        resLogin.body.accessToken,
+        '/pair-game-quiz/pairs/my-current/answers',
+        QUIZ_ANSWERS,
+      ).expect(200)
+
+      if (count === 4) {
+        await makeAuthBearerRequest(
+          httpServer,
+          'post',
+          resLogin.body.accessToken,
+          '/pair-game-quiz/pairs/my-current/answers',
+          QUIZ_ANSWERS,
+        ).expect(403)
+      }
+
+      count += 1
+    }
   })
 
   it(

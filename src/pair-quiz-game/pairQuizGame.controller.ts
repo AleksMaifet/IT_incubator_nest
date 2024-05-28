@@ -18,6 +18,7 @@ import {
   QuestionEntity,
 } from './entities'
 import { AnswerDto } from './dto'
+import { MAX_AMOUNT_QUESTIONS } from './constants'
 
 @Controller('pair-game-quiz/pairs')
 export class PairQuizGameController {
@@ -33,18 +34,17 @@ export class PairQuizGameController {
     const { userId } = user
 
     const activeGame =
-      await this.pairQuizGameRepository.getActiveGameByUser(userId)
+      await this.pairQuizGameRepository.getActiveGameByUserId(userId)
 
     if (!activeGame) {
       throw new ForbiddenException()
     }
 
-    const answers = await this.pairQuizGameRepository.getAllAnswersByUser({
-      userId,
-      gameId: activeGame.id,
-    })
+    const userAnswers = await this.pairQuizGameRepository.getAllAnswersByUserId(
+      { userId, gameId: activeGame.id },
+    )
 
-    if (answers.length > 5) {
+    if (userAnswers.length > MAX_AMOUNT_QUESTIONS) {
       throw new ForbiddenException()
     }
 
@@ -61,15 +61,20 @@ export class PairQuizGameController {
   @Post('/connection')
   @HttpCode(HttpStatus.OK)
   private async joinOrCreateGame(@User() user: IJwtUser) {
-    const activeGame = await this.pairQuizGameRepository.getActiveGameByUser(
-      user.userId,
-    )
+    const { userId } = user
+
+    const activeGame =
+      await this.pairQuizGameRepository.getActiveGameByUserId(userId)
 
     if (activeGame) {
       throw new ForbiddenException()
     }
 
-    const game = await this.pairQuizGameRepository.joinOrCreateGame(user)
+    const game = await this.pairQuizGameRepository.joinOrCreateGame(userId)
+
+    if (!game) {
+      throw new ForbiddenException()
+    }
 
     return PairQuizGameController.pairConnectionViewModel(game)
   }
